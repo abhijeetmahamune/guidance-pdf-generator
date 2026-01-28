@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Checker - Guidance PDF Generator</title>
+    <link rel="stylesheet" href="template.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- PDF Preview Area -->
+        <div class="pdf-preview" id="pdfContent">
+            <!-- Header Section -->
+            <header class="pdf-header">
+                <div class="branding">
+                    <div class="logo-placeholder">
+                        <a href="https://brainchecker.in/"><img src="\assets\Brain Checker Logo.png" alt="" height="80"></a>
+                    </div>
+                    <div class="document-type">Personalized Action Plan</div>
+                </div>
+                
+                <div class="student-info">
+                    <div class="info-row">
+                        <div class="info-item">
+                            <span class="info-label">Student Name:</span>
+                            <span class="info-value" id="previewStudentName">{{studentName}}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Assessment Type:</span>
+                            <span class="info-value" id="previewAssessmentType">{{assessmentType}}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Date:</span>
+                            <span class="info-value" id="previewDate">{{currentDate}}</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Disclaimer Section -->
+            <div class="disclaimer">
+                <p><i class="fas fa-info-circle"></i> This document contains personalized guidance based on the counseling session. It is not a clinical assessment or diagnostic report, but rather a daily reference tool for implementing recommended strategies.</p>
+            </div>
+
+            <!-- Two-Column Content -->
+            <main class="content-columns">
+                <!-- Parent Column -->
+                <section class="column parent-column">
+                    <div class="column-header">
+                        <div class="column-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h2>Parent Guidance</h2>
+                        <p class="column-subtitle">Daily support strategies</p>
+                    </div>
+                    
+                    <div class="tasks-container">
+                        <div class="tasks-list" id="previewParentTodos">
+                            <!-- Parent tasks will be dynamically inserted here -->
+                            {{#each parentTodos}}
+                            <div class="task-item">
+                                <div class="task-checkbox">
+                                    <i class="far fa-square"></i>
+                                </div>
+                                <div class="task-text">{{this}}</div>
+                            </div>
+                            {{/each}}
+                        </div>
+                        
+                        <div class="empty-state" id="parentEmptyState">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>No parent guidance added yet</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Student Column -->
+                <section class="column student-column">
+                    <div class="column-header">
+                        <div class="column-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h2>Student Actions</h2>
+                        <p class="column-subtitle">Daily practice & development</p>
+                    </div>
+                    
+                    <div class="tasks-container">
+                        <div class="tasks-list" id="previewStudentTodos">
+                            <!-- Student tasks will be dynamically inserted here -->
+                            {{#each studentTodos}}
+                            <div class="task-item">
+                                <div class="task-checkbox">
+                                    <i class="far fa-square"></i>
+                                </div>
+                                <div class="task-text">{{this}}</div>
+                            </div>
+                            {{/each}}
+                        </div>
+                        
+                        <div class="empty-state" id="studentEmptyState">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>No student actions added yet</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Notes Section -->
+            <section class="notes-section">
+                <div class="notes-header">
+                    <i class="fas fa-sticky-note"></i>
+                    <h3>Counselor Notes & Recommendations</h3>
+                </div>
+                <div class="notes-content" id="previewCounselorNotes">
+                    {{counselorNotes}}
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="pdf-footer">
+                <div class="footer-content">
+                    <p>This personalized action plan was created by your Brain Checker counselor. For questions or follow-up, please contact your counseling session provider.</p>
+                    <div class="footer-meta">
+                        <span>Generated on: {{currentDate}}</span>
+                        <span>Confidential - For family use only</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Input Form (for live preview) -->
+        <div class="input-form">
+            <h2><i class="fas fa-edit"></i> Guidance Input</h2>
+            
+            <div class="form-group">
+                <label for="studentName"><i class="fas fa-user"></i> Student Name</label>
+                <input type="text" id="studentName" placeholder="Enter student's full name">
+            </div>
+            
+            <div class="form-group">
+                <label for="assessmentType"><i class="fas fa-chart-bar"></i> Assessment Type</label>
+                <select id="assessmentType"><option value="" disabled selected>Select assessment type</option>
+                    <option value="Psychometric Test (Below 13)">Psychometric Test (Below 13)</option>
+                    <option value="Career Guidance (13+)">Career Guidance (13+)</option>
+                </select>
+            </div>
+            
+            <!-- Psychometric Test Layout (Parent and Student) -->
+            <div class="form-row" id="dualTodosRow">
+                <div class="form-column">
+                    <label for="parentTodos"><i class="fas fa-users"></i> Parent To-Do List</label>
+                    <p class="help-text">Enter one task per line</p>
+                    <textarea id="parentTodos" rows="8" placeholder="Example: Review homework for 15 minutes daily
+Establish consistent bedtime routine
+Praise effort, not just results"></textarea>
+                </div>
+                
+                <div class="form-column">
+                    <label for="studentTodos"><i class="fas fa-user-graduate"></i> Student To-Do List</label>
+                    <p class="help-text">Enter one task per line</p>
+                    <textarea id="studentTodos" rows="8" placeholder="Example: Practice deep breathing for 5 minutes
+Organize school bag each evening
+Read for pleasure 20 minutes daily"></textarea>
+                </div>
+            </div>
+            
+            <!-- Career Guidance Layout (Single To-Do) -->
+            <div class="form-group" id="singleTodoGroup" style="display: none;">
+                <label for="careerTodo"><i class="fas fa-tasks"></i> To-Do List</label>
+                <p class="help-text">Enter one task per line</p>
+                <textarea id="careerTodo" rows="8" placeholder="Example: Explore career interests
+Research potential career paths
+Prepare for career discussions"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="counselorNotes"><i class="fas fa-sticky-note"></i> Additional Counselor Notes (Optional)</label>
+                <textarea id="counselorNotes" rows="4" placeholder="Add any additional recommendations or context..."></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button id="downloadPdf" class="btn-primary">
+                    <i class="fas fa-download"></i> Download as PDF
+                </button>
+                <button id="resetForm" class="btn-secondary">
+                    <i class="fas fa-redo"></i> Reset Form
+                </button>
+            </div>
+            
+            <!-- <div class="instructions">
+                <h3><i class="fas fa-lightbulb"></i> Tips for Effective Guidance</h3>
+                <ul>
+                    <li>Keep tasks specific and actionable</li>
+                    <li>Focus on daily or weekly habits</li>
+                    <li>Balance challenge with achievability</li>
+                    <li>Update this plan as progress is made</li>
+                </ul>
+            </div> -->
+        </div>
+    </div>
+
+    <!-- Modal for success message -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> PDF Ready for Download</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Your personalized action plan has been generated and should start downloading automatically.</p>
+                <p>If the download doesn't start, please check your browser's download settings or try again.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for validation message -->
+    <div id="validationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-circle"></i> Missing Required Fields</h3>
+                <span class="close-modal-validation">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Please fill in all required fields before generating the PDF:</p>
+                <ul id="missingFieldsList" style="text-align: left; margin-top: 15px;">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // Initialize with current date
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentDate = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('previewDate').textContent = currentDate;
+            
+            // Set up live preview updates
+            setupLivePreview();
+            
+            // Set up PDF generation
+            setupPdfGeneration();
+            
+            // Set up modal
+            setupModal();
+            
+            // Validate form on initial load
+            validateForm();
+        });
+        
+        function setupLivePreview() {
+            const inputs = ['studentName', 'assessmentType', 'parentTodos', 'studentTodos', 'counselorNotes', 'careerTodo'];
+            
+            inputs.forEach(inputId => {
+                const inputElement = document.getElementById(inputId);
+                const previewElement = document.getElementById('preview' + capitalizeFirstLetter(inputId));
+                
+                if (inputElement) {
+                    inputElement.addEventListener('input', function() {
+                        if (inputId === 'parentTodos' || inputId === 'studentTodos') {
+                            updateTasksPreview(inputId, this.value);
+                        } else if (inputId === 'careerTodo') {
+                            updateTasksPreview('studentTodos', this.value); // Use studentTodos preview for career to-do
+                        } else if (previewElement) {
+                            previewElement.textContent = this.value;
+                        }
+                        validateForm();
+                    });
+                    
+                    if (inputId === 'assessmentType') {
+                        inputElement.addEventListener('change', function() {
+                            previewElement.textContent = this.value;
+                            toggleAssessmentLayout(this.value);
+                            validateForm();
+                        });
+                    }
+                }
+            });
+        }
+        
+        function toggleAssessmentLayout(assessmentType) {
+            const dualTodosRow = document.getElementById('dualTodosRow');
+            const singleTodoGroup = document.getElementById('singleTodoGroup');
+            const parentEmptyState = document.getElementById('parentEmptyState');
+            const studentEmptyState = document.getElementById('studentEmptyState');
+            
+            if (assessmentType === 'Career Guidance (13+)') {
+                // Show single to-do, hide dual todos
+                dualTodosRow.style.display = 'none';
+                singleTodoGroup.style.display = 'block';
+                
+                // Clear parent todos and show empty state
+                document.getElementById('parentTodos').value = '';
+                document.getElementById('studentTodos').value = '';
+                document.getElementById('previewParentTodos').innerHTML = '';
+                document.getElementById('careerTodo').value = '';
+                
+                parentEmptyState.style.display = 'flex';
+                studentEmptyState.style.display = 'flex';
+            } else if (assessmentType === 'Psychometric Test (Below 13)') {
+                // Show dual todos, hide single to-do
+                dualTodosRow.style.display = 'grid';
+                singleTodoGroup.style.display = 'none';
+                
+                // Clear career todo
+                document.getElementById('careerTodo').value = '';
+                document.getElementById('previewStudentTodos').innerHTML = '';
+                document.getElementById('previewParentTodos').innerHTML = '';
+                
+                parentEmptyState.style.display = 'flex';
+                studentEmptyState.style.display = 'flex';
+            } else {
+                // No assessment selected
+                dualTodosRow.style.display = 'none';
+                singleTodoGroup.style.display = 'none';
+            }
+        }
+        
+        function validateForm() {
+            const studentName = document.getElementById('studentName').value.trim();
+            const assessmentType = document.getElementById('assessmentType').value.trim();
+            const downloadBtn = document.getElementById('downloadPdf');
+            
+            let isValid = studentName !== '' && assessmentType !== '';
+            
+            if (assessmentType === 'Psychometric Test (Below 13)') {
+                const parentTodos = document.getElementById('parentTodos').value.trim();
+                const studentTodos = document.getElementById('studentTodos').value.trim();
+                isValid = isValid && parentTodos !== '' && studentTodos !== '';
+            } else if (assessmentType === 'Career Guidance (13+)') {
+                const careerTodo = document.getElementById('careerTodo').value.trim();
+                isValid = isValid && careerTodo !== '';
+            }
+            
+            if (isValid) {
+                downloadBtn.disabled = false;
+                downloadBtn.style.opacity = '1';
+                downloadBtn.style.cursor = 'pointer';
+            } else {
+                downloadBtn.disabled = false; // Keep button clickable to show validation
+                downloadBtn.style.opacity = '0.6';
+                downloadBtn.style.cursor = 'not-allowed';
+            }
+        }
+        
+        function updateTasksPreview(type, text) {
+            const previewId = type === 'parentTodos' ? 'previewParentTodos' : 'previewStudentTodos';
+            const emptyStateId = type === 'parentTodos' ? 'parentEmptyState' : 'studentEmptyState';
+            
+            const previewElement = document.getElementById(previewId);
+            const emptyStateElement = document.getElementById(emptyStateId);
+            
+            if (!text.trim()) {
+                previewElement.innerHTML = '';
+                emptyStateElement.style.display = 'flex';
+                return;
+            }
+            
+            emptyStateElement.style.display = 'none';
+            
+            const tasks = text.split('\n').filter(task => task.trim() !== '');
+            let tasksHtml = '';
+            
+            tasks.forEach(task => {
+                tasksHtml += `
+                    <div class="task-item">
+                        <div class="task-checkbox">
+                            <i class="far fa-square"></i>
+                        </div>
+                        <div class="task-text">${task.trim()}</div>
+                    </div>
+                `;
+            });
+            
+            previewElement.innerHTML = tasksHtml;
+        }
+        
+        function setupPdfGeneration() {
+            document.getElementById('downloadPdf').addEventListener('click', function(e) {
+                const studentName = document.getElementById('studentName').value.trim();
+                const assessmentType = document.getElementById('assessmentType').value.trim();
+                
+                let isValid = studentName !== '' && assessmentType !== '';
+                
+                if (assessmentType === 'Psychometric Test (Below 13)') {
+                    const parentTodos = document.getElementById('parentTodos').value.trim();
+                    const studentTodos = document.getElementById('studentTodos').value.trim();
+                    isValid = isValid && parentTodos !== '' && studentTodos !== '';
+                } else if (assessmentType === 'Career Guidance (13+)') {
+                    const careerTodo = document.getElementById('careerTodo').value.trim();
+                    isValid = isValid && careerTodo !== '';
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    showValidationModal();
+                    return;
+                }
+                generatePdf();
+            });
+        }
+        
+        function generatePdf() {
+            const pdfContent = document.getElementById('pdfContent');
+            
+            html2canvas(pdfContent, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Add additional pages if content is too long
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Generate filename
+                const studentName = document.getElementById('studentName').value || 'Student';
+                const filename = `BrainChecker_ActionPlan_${studentName.replace(/\s+/g, '_')}.pdf`;
+                
+                pdf.save(filename);
+                
+                // Show success modal
+                document.getElementById('successModal').style.display = 'block';
+            });
+        }
+        
+        function setupModal() {
+            const modal = document.getElementById('successModal');
+            const closeBtn = document.querySelector('.close-modal');
+            
+            const validationModal = document.getElementById('validationModal');
+            const closeValidationBtn = document.querySelector('.close-modal-validation');
+            
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            closeValidationBtn.addEventListener('click', function() {
+                validationModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+                if (event.target === validationModal) {
+                    validationModal.style.display = 'none';
+                }
+            });
+            
+            // Reset form button
+            document.getElementById('resetForm').addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset all fields?')) {
+                    document.getElementById('studentName').value = '';
+                    document.getElementById('assessmentType').value = '';
+                    document.getElementById('parentTodos').value = '';
+                    document.getElementById('studentTodos').value = '';
+                    document.getElementById('careerTodo').value = '';
+                    document.getElementById('counselorNotes').value = '';
+                    
+                    // Update preview
+                    document.getElementById('previewStudentName').textContent = '{{studentName}}';
+                    document.getElementById('previewAssessmentType').textContent = '{{assessmentType}}';
+                    document.getElementById('previewParentTodos').innerHTML = '';
+                    document.getElementById('previewStudentTodos').innerHTML = '';
+                    document.getElementById('previewCounselorNotes').textContent = '';
+                    
+                    document.getElementById('parentEmptyState').style.display = 'flex';
+                    document.getElementById('studentEmptyState').style.display = 'flex';
+                    
+                    // Hide layout rows
+                    document.getElementById('dualTodosRow').style.display = 'none';
+                    document.getElementById('singleTodoGroup').style.display = 'none';
+                    
+                    validateForm();
+                }
+            });
+        }
+        
+        function showValidationModal() {
+            const validationModal = document.getElementById('validationModal');
+            const missingFieldsList = document.getElementById('missingFieldsList');
+            const missingFields = [];
+            
+            const studentName = document.getElementById('studentName').value.trim();
+            const assessmentType = document.getElementById('assessmentType').value.trim();
+            const parentTodos = document.getElementById('parentTodos').value.trim();
+            const studentTodos = document.getElementById('studentTodos').value.trim();
+            const careerTodo = document.getElementById('careerTodo').value.trim();
+            
+            if (studentName === '') missingFields.push('Student Name');
+            if (assessmentType === '') missingFields.push('Assessment Type');
+            
+            if (assessmentType === 'Psychometric Test (Below 13)') {
+                if (parentTodos === '') missingFields.push('Parent To-Do List');
+                if (studentTodos === '') missingFields.push('Student To-Do List');
+            } else if (assessmentType === 'Career Guidance (13+)') {
+                if (careerTodo === '') missingFields.push('To-Do List');
+            }
+            
+            missingFieldsList.innerHTML = missingFields.map(field => `<li><i class="fas fa-exclamation-triangle"></i> ${field}</li>`).join('');
+            
+            console.log('Showing validation modal');
+            validationModal.style.display = 'flex';
+        }
+        
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+    </script>
+</body>
+</html>
