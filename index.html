@@ -22,7 +22,8 @@
             <header class="pdf-header">
                 <div class="branding">
                     <div class="logo-placeholder">
-                        <a href="https://brainchecker.in/"><img src="assets/Brain Checker Logo.png" alt="Brain Checker logo" height="80"></a>
+                        <a href="https://brainchecker.in/"><img src="assets/Brain Checker Logo.png"
+                                alt="Brain Checker logo" height="80"></a>
                     </div>
                     <div class="document-type">Personalized Action Plan</div>
                 </div>
@@ -193,10 +194,10 @@ Prepare for career discussions"></textarea>
             </div>
 
             <div class="form-actions">
-                <button id="downloadPdf" class="btn-primary">
+                <button id="downloadPdf" class="btn-primary" type="button">
                     <i class="fas fa-download"></i> Download as PDF
                 </button>
-                <button id="resetForm" class="btn-secondary">
+                <button id="resetForm" class="btn-secondary" type="button">
                     <i class="fas fa-redo"></i> Reset Form
                 </button>
             </div>
@@ -246,6 +247,44 @@ Prepare for career discussions"></textarea>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         // Initialize with current date
+        function getVal(id) {
+            return document.getElementById(id)?.value || "";
+        }
+
+        function getLines(id) {
+            return getVal(id)
+                .split("\n")
+                .map(l => l.trim())
+                .filter(Boolean);
+        }
+
+        function drawTodoSection(pdf, title, items, y) {
+            const margin = 20;
+            const pageWidth = 210;
+            const pageHeight = 297;
+
+            pdf.setFont("Helvetica", "bold");
+            pdf.setFontSize(14);
+            pdf.text(title, margin, y);
+            y += 8;
+
+            pdf.setFont("Helvetica", "normal");
+            pdf.setFontSize(11);
+
+            items.forEach(item => {
+                if (y > pageHeight - 20) {
+                    pdf.addPage();
+                    y = 20;
+                }
+                pdf.text(`☐ ${item}`, margin, y, {
+                    maxWidth: pageWidth - margin * 2
+                });
+                y += 6;
+            });
+
+            return y + 6;
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const currentDate = new Date().toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -401,7 +440,8 @@ Prepare for career discussions"></textarea>
                 downloadBtn.style.opacity = '1';
                 downloadBtn.style.cursor = 'pointer';
             } else {
-                downloadBtn.disabled = false; // Keep button clickable to show validation
+                // Disable button when form is invalid
+                downloadBtn.disabled = true;
                 downloadBtn.style.opacity = '0.6';
                 downloadBtn.style.cursor = 'not-allowed';
             }
@@ -455,6 +495,8 @@ Prepare for career discussions"></textarea>
                     isValid = isValid && careerTodo !== '';
                 }
 
+                console.log('downloadPdf clicked', { studentName, assessmentType, isValid });
+
                 if (!isValid) {
                     e.preventDefault();
                     showValidationModal();
@@ -465,103 +507,83 @@ Prepare for career discussions"></textarea>
         }
 
         // High-quality, direct-download PDF generator (emulates Print look)
+        function generatePdfTextBased() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF("p", "mm", "a4");
+
+            const pageWidth = 210;
+            const margin = 20;
+            let y = 20;
+
+            // ===== HEADER =====
+            pdf.setFont("Helvetica", "bold");
+            pdf.setFontSize(18);
+            pdf.text("Personalized Action Plan", pageWidth / 2, y, { align: "center" });
+            y += 10;
+
+            pdf.setFontSize(11);
+            pdf.setFont("Helvetica", "normal");
+            pdf.text(`Student Name: ${getVal("studentName")}`, margin, y);
+            y += 6;
+            pdf.text(`Assessment Type: ${getVal("assessmentType")}`, margin, y);
+            y += 6;
+            pdf.text(`Date: ${new Date().toLocaleDateString()}`, margin, y);
+            y += 10;
+
+            // Divider
+            pdf.line(margin, y, pageWidth - margin, y);
+            y += 8;
+
+            // ===== DISCLAIMER =====
+            pdf.setFontSize(10);
+            pdf.text(
+                "This guidance is for support only and does not replace professional or medical advice.",
+                margin,
+                y,
+                { maxWidth: pageWidth - margin * 2 }
+            );
+            y += 12;
+
+            // ===== PARENT TODO =====
+            if (getVal("assessmentType").includes("Psychometric")) {
+                y = drawTodoSection(
+                    pdf,
+                    "Parent To-Do List",
+                    getLines("parentTodos"),
+                    y
+                );
+            }
+
+            // ===== STUDENT TODO =====
+            const studentTodos = getVal("assessmentType").includes("Career")
+                ? getLines("careerTodo")
+                : getLines("studentTodos");
+
+            y = drawTodoSection(pdf, "Student To-Do List", studentTodos, y);
+
+            // ===== NOTES =====
+            const notes = getVal("counselorNotes");
+            if (notes) {
+                y += 5;
+                pdf.setFont("Helvetica", "bold");
+                pdf.text("Counselor Notes", margin, y);
+                y += 6;
+
+                pdf.setFont("Helvetica", "normal");
+                pdf.setFontSize(11);
+                const noteLines = pdf.splitTextToSize(
+                    notes,
+                    pageWidth - margin * 2
+                );
+                pdf.text(noteLines, margin, y);
+            }
+
+            pdf.save(`BrainChecker_${Date.now()}.pdf`);
+        }
+
         function generatePdf() {
-            const pdfContent = document.getElementById('pdfContent');
-
-            // Store original styles to restore later
-            const originalWidth = pdfContent.style.width;
-            const originalHeight = pdfContent.style.height;
-            const originalMinHeight = pdfContent.style.minHeight;
-
-            // Use A4 CSS size for layout, capture at higher pixel density
-            const a4CssWidth = 794; // approx A4 at 96 DPI (CSS px)
-            const a4CssHeight = 1123;
-
-            const deviceDPR = window.devicePixelRatio || 1;
-            const captureScale = Math.min(3, Math.max(2, Math.round(deviceDPR * 2)));
-
-            // Apply A4 CSS sizing before capture
-            pdfContent.style.width = `${a4CssWidth}px`;
-            pdfContent.style.minHeight = `${a4CssHeight}px`;
-
-            html2canvas(pdfContent, {
-                scale: captureScale,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff',
-                width: a4CssWidth,
-                height: null,
-                windowWidth: a4CssWidth,
-                onclone: function (clonedDoc) {
-                    // Apply a print-like class so cloned content uses print-friendly styles
-                    clonedDoc.body.classList.add('force-print');
-
-                    const clonedContent = clonedDoc.getElementById('pdfContent');
-                    clonedContent.style.width = `${a4CssWidth}px`;
-                    clonedContent.style.minHeight = 'auto';
-
-                    // Inject a helper style into the clone to ensure print colors are kept
-                    const style = clonedDoc.createElement('style');
-                    style.innerHTML = `
-                        .pdf-preview { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    `;
-                    clonedDoc.head.appendChild(style);
-                }
-            }).then(canvas => {
-                // Restore original styles
-                pdfContent.style.width = originalWidth;
-                pdfContent.style.height = originalHeight;
-                pdfContent.style.minHeight = originalMinHeight || '297mm';
-
-                // Use PNG for lossless capture (higher quality)
-                const imgData = canvas.toDataURL('image/png');
-
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-
-                const imgWidth = 210; // A4 width in mm
-                const pageHeight = 297; // A4 height in mm
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                let heightLeft = imgHeight;
-                let position = 0;
-
-                // Add first page
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-
-                // Add additional pages if content is too long
-                while (heightLeft > 0) {
-                    position = -pageHeight + heightLeft;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-
-                // Generate filename
-                const studentName = document.getElementById('studentName').value || 'Student';
-                const sanitizedName = studentName.replace(/[^a-zA-Z0-9_\-]/g, '_');
-                const filename = `BrainChecker_${sanitizedName}_${Date.now()}.pdf`;
-
-                // Compress the PDF before saving
-                const pdfOutput = pdf.output('datauristring');
-
-                // Save the PDF
-                pdf.save(filename);
-
-                // Show success modal
-                document.getElementById('successModal').style.display = 'block';
-
-                // Log file size estimation
-                const fileSize = Math.round(pdfOutput.length * 3 / 4 / 1024); // Convert base64 to KB
-                console.log(`Estimated PDF size: ${fileSize} KB`);
-            }).catch(error => {
-                console.error('Error generating PDF:', error);
-                // Restore original styles on error
-                pdfContent.style.width = originalWidth;
-                pdfContent.style.height = originalHeight;
-                pdfContent.style.minHeight = '297mm';
-                alert('Error generating PDF. Please try again.');
-            });
+            console.log('generatePdf wrapper invoked');
+            return generatePdfTextBased();
         }
 
         function setupModal() {
