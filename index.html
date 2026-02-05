@@ -13,207 +13,68 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- <script src="script.js"></script> -->
-
 </head>
 
 <body>
-    <div class="container">
-        <!-- PDF Preview Area -->
-        <div class="pdf-preview" id="pdfContent">
-            <!-- Header Section -->
-            <header class="pdf-header">
-                <div class="branding">
-                    <div class="logo-placeholder">
-                        <a href="https://brainchecker.in/"><img src="assets/Brain Checker Logo.png"
-                                alt="Brain Checker logo" height="80"></a>
-                    </div>
-                    <div class="document-type">Counselor Report</div>
-                </div>
+    <!-- Input Form (for live preview) -->
+    <div class="input-form">
+        <h2><i class="fas fa-edit"></i> Guidance Input</h2>
 
-                <div class="student-info">
-                    <div class="info-row">
-                        <div class="info-item">
-                            <span class="info-label">Student Name:</span>
-                            <span class="info-value" id="previewStudentName">{{studentName}}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Assessment Type:</span>
-                            <span class="info-value" id="previewAssessmentType">{{assessmentType}}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Date:</span>
-                            <span class="info-value" id="previewDate">{{currentDate}}</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Disclaimer Section -->
-            <div class="disclaimer">
-                <p><i class="fas fa-info-circle"></i> This document contains personalized guidance based on the
-                    counseling session. It is not a clinical assessment or diagnostic report, but rather a daily
-                    reference tool for implementing recommended strategies.</p>
-            </div>
-
-            <!-- Two-Column Content -->
-            <main class="content-columns" id="contentColumns">
-                <!-- Parent Column -->
-                <section class="column parent-column" id="parentColumn">
-                    <div class="column-header">
-                        <div class="column-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h2>Parent Guidance</h2>
-                        <p class="column-subtitle">Daily support strategies</p>
-                    </div>
-
-                    <div class="tasks-container">
-                        <div class="tasks-list" id="previewParentTodos">
-                            <!-- Parent tasks will be dynamically inserted here -->
-                            {{#each parentTodos}}
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <i class="far fa-square"></i>
-                                </div>
-                                <div class="task-text">{{this}}</div>
-                            </div>
-                            {{/each}}
-                        </div>
-
-                        <div class="empty-state" id="parentEmptyState">
-                            <i class="fas fa-clipboard-list"></i>
-                            <p>No parent guidance added yet</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Student Column -->
-                <section class="column student-column" id="studentColumn">
-                    <div class="column-header">
-                        <div class="column-icon">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <h2>Student Actions</h2>
-                        <p class="column-subtitle">Daily practice & development</p>
-                    </div>
-
-                    <div class="tasks-container">
-                        <div class="tasks-list" id="previewStudentTodos">
-                            <!-- Student tasks will be dynamically inserted here -->
-                            {{#each studentTodos}}
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <i class="far fa-square"></i>
-                                </div>
-                                <div class="task-text">{{this}}</div>
-                            </div>
-                            {{/each}}
-                        </div>
-
-                        <div class="empty-state" id="studentEmptyState">
-                            <i class="fas fa-clipboard-list"></i>
-                            <p>No student actions added yet</p>
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-            <!-- Notes Section -->
-            <section class="notes-section">
-                <div class="notes-header">
-                    <i class="fas fa-sticky-note"></i>
-                    <h3>Counselor Notes & Recommendations</h3>
-                </div>
-                <div class="notes-content" id="previewCounselorNotes">
-                    {{counselorNotes}}
-                </div>
-            </section>
-
-            <!-- Footer -->
-            <footer class="pdf-footer">
-                <div class="footer-content">
-                    <p>This Counselor Report was created by your Brain Checker counselor. For questions or
-                        follow-up, please contact your counseling session provider.</p>
-                    <div class="footer-meta">
-                        <span>Generated on: {{currentDate}}</span>
-                        <span>Confidential - For family use only</span>
-                    </div>
-                </div>
-            </footer>
+        <div class="form-group">
+            <label for="studentName"><i class="fas fa-user"></i> Student Name</label>
+            <input type="text" id="studentName" placeholder="Enter student's full name">
         </div>
 
-        <!-- Input Form (for live preview) -->
-        <div class="input-form">
-            <h2><i class="fas fa-edit"></i> Guidance Input</h2>
+        <div class="form-group">
+            <label for="assessmentType"><i class="fas fa-chart-bar"></i> Assessment Type</label>
+            <select id="assessmentType">
+                <option value="" disabled selected>Select assessment type</option>
+                <option value="Psychometric Test (Below 13)">Psychometric Test (Below 13)</option>
+                <option value="Career Guidance (13+)">Career Guidance (13+)</option>
+            </select>
+        </div>
 
-            <div class="form-group">
-                <label for="studentName"><i class="fas fa-user"></i> Student Name</label>
-                <input type="text" id="studentName" placeholder="Enter student's full name">
-            </div>
-
-            <div class="form-group">
-                <label for="assessmentType"><i class="fas fa-chart-bar"></i> Assessment Type</label>
-                <select id="assessmentType">
-                    <option value="" disabled selected>Select assessment type</option>
-                    <option value="Psychometric Test (Below 13)">Psychometric Test (Below 13)</option>
-                    <option value="Career Guidance (13+)">Career Guidance (13+)</option>
-                </select>
-            </div>
-
-            <!-- Psychometric Test Layout (Parent and Student) -->
-            <div class="form-row" id="dualTodosRow">
-                <div class="form-column">
-                    <label for="parentTodos"><i class="fas fa-users"></i> Parent To-Do List</label>
-                    <p class="help-text">Enter one task per line</p>
-                    <textarea id="parentTodos" rows="8" placeholder="Example: Review homework for 15 minutes daily
+        <!-- Psychometric Test Layout (Parent and Student) -->
+        <div class="form-row" id="dualTodosRow">
+            <div class="form-column">
+                <label for="parentTodos"><i class="fas fa-users"></i> Parent To-Do List</label>
+                <p class="help-text">Enter one task per line</p>
+                <textarea id="parentTodos" rows="8" placeholder="Example: Review homework for 15 minutes daily
 Establish consistent bedtime routine
 Praise effort, not just results"></textarea>
-                </div>
+            </div>
 
-                <div class="form-column">
-                    <label for="studentTodos"><i class="fas fa-user-graduate"></i> Student To-Do List</label>
-                    <p class="help-text">Enter one task per line</p>
-                    <textarea id="studentTodos" rows="8" placeholder="Example: Practice deep breathing for 5 minutes
+            <div class="form-column">
+                <label for="studentTodos"><i class="fas fa-user-graduate"></i> Student To-Do List</label>
+                <p class="help-text">Enter one task per line</p>
+                <textarea id="studentTodos" rows="8" placeholder="Example: Practice deep breathing for 5 minutes
 Organize school bag each evening
 Read for pleasure 20 minutes daily"></textarea>
-                </div>
             </div>
+        </div>
 
-            <!-- Career Guidance Layout (Single To-Do) -->
-            <div class="form-group" id="singleTodoGroup" style="display: none;">
-                <label for="careerTodo"><i class="fas fa-tasks"></i> To-Do List</label>
-                <p class="help-text">Enter one task per line</p>
-                    <textarea id="careerTodo" rows="8" placeholder="Example: Explore career interests
+        <!-- Career Guidance Layout (Single To-Do) -->
+        <div class="form-group" id="singleTodoGroup" style="display: none;">
+            <label for="careerTodo"><i class="fas fa-tasks"></i> To-Do List</label>
+            <p class="help-text">Enter one task per line</p>
+            <textarea id="careerTodo" rows="8" placeholder="Example: Explore career interests
 Research potential career paths
 Prepare for career discussions"></textarea>
-            </div>
+        </div>
 
-            <div class="form-group">
-                <label for="counselorNotes"><i class="fas fa-sticky-note"></i> Additional Counselor Notes
-                    (Optional)</label>
-                <textarea id="counselorNotes" rows="4"
-                    placeholder="Add any additional recommendations or context..."></textarea>
-            </div>
+        <div class="form-group">
+            <label for="counselorNotes"><i class="fas fa-sticky-note"></i> Additional Counselor Notes (Optional)</label>
+            <textarea id="counselorNotes" rows="4"
+                placeholder="Add any additional recommendations or context..."></textarea>
+        </div>
 
-            <div class="form-actions">
-                <button id="downloadPdf" class="btn-primary" type="button">
-                    <i class="fas fa-download"></i> Download as PDF
-                </button>
-                <button id="resetForm" class="btn-secondary" type="button">
-                    <i class="fas fa-redo"></i> Reset Form
-                </button>
-            </div>
-
-            <!-- <div class="instructions">
-                <h3><i class="fas fa-lightbulb"></i> Tips for Effective Guidance</h3>
-                <ul>
-                    <li>Keep tasks specific and actionable</li>
-                    <li>Focus on daily or weekly habits</li>
-                    <li>Balance challenge with achievability</li>
-                    <li>Update this plan as progress is made</li>
-                </ul>
-            </div> -->
+        <div class="form-actions">
+            <button id="downloadPdf" class="btn-primary" type="button">
+                <i class="fas fa-download"></i> Download as PDF
+            </button>
+            <button id="resetForm" class="btn-secondary" type="button">
+                <i class="fas fa-redo"></i> Reset Form
+            </button>
         </div>
     </div>
 
@@ -274,22 +135,9 @@ Prepare for career discussions"></textarea>
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
-        // Initialize with current date
+        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function () {
-            const currentDate = new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            document.getElementById('previewDate').textContent = currentDate;
-
-            // Also update the footer date
-            const footerDateSpan = document.querySelector('.footer-meta span:first-child');
-            if (footerDateSpan) {
-                footerDateSpan.textContent = `Generated on: ${currentDate}`;
-            }
-
-            // Set up live preview updates
+            // Set up form event listeners
             setupLivePreview();
 
             // Set up PDF generation
@@ -307,23 +155,14 @@ Prepare for career discussions"></textarea>
 
             inputs.forEach(inputId => {
                 const inputElement = document.getElementById(inputId);
-                const previewElement = document.getElementById('preview' + capitalizeFirstLetter(inputId));
 
                 if (inputElement) {
                     inputElement.addEventListener('input', function () {
-                        if (inputId === 'parentTodos' || inputId === 'studentTodos') {
-                            updateTasksPreview(inputId, this.value);
-                        } else if (inputId === 'careerTodo') {
-                            updateTasksPreview('studentTodos', this.value);
-                        } else if (previewElement) {
-                            previewElement.textContent = this.value;
-                        }
                         validateForm();
                     });
 
                     if (inputId === 'assessmentType') {
                         inputElement.addEventListener('change', function () {
-                            previewElement.textContent = this.value;
                             toggleAssessmentLayout(this.value);
                             validateForm();
                         });
@@ -335,77 +174,26 @@ Prepare for career discussions"></textarea>
         function toggleAssessmentLayout(assessmentType) {
             const dualTodosRow = document.getElementById('dualTodosRow');
             const singleTodoGroup = document.getElementById('singleTodoGroup');
-            const parentEmptyState = document.getElementById('parentEmptyState');
-            const studentEmptyState = document.getElementById('studentEmptyState');
-            const contentColumns = document.getElementById('contentColumns');
-            const parentColumn = document.getElementById('parentColumn');
-            const studentColumn = document.getElementById('studentColumn');
-            const studentColumnHeader = studentColumn.querySelector('.column-header');
 
             if (assessmentType === 'Career Guidance (13+)') {
                 // Show single to-do, hide dual todos
                 dualTodosRow.style.display = 'none';
                 singleTodoGroup.style.display = 'block';
 
-                // Update preview layout - single column
-                contentColumns.style.gridTemplateColumns = '1fr';
-                parentColumn.style.display = 'none';
-                studentColumn.style.display = 'block';
-                studentColumn.classList.remove('student-column');
-                studentColumn.classList.add('career-column');
-
-                // Update student column header for career guidance
-                studentColumnHeader.innerHTML = `
-                    <div class="column-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <h2>To-Do List</h2>
-                    <p class="column-subtitle">Daily actions & goals</p>
-                `;
-
-                // Clear parent todos and show empty state
+                // Clear parent todos
                 document.getElementById('parentTodos').value = '';
                 document.getElementById('studentTodos').value = '';
-                document.getElementById('previewParentTodos').innerHTML = '';
-                document.getElementById('careerTodo').value = '';
-
-                parentEmptyState.style.display = 'flex';
-                studentEmptyState.style.display = 'flex';
             } else if (assessmentType === 'Psychometric Test (Below 13)') {
                 // Show dual todos, hide single to-do
                 dualTodosRow.style.display = 'grid';
                 singleTodoGroup.style.display = 'none';
 
-                // Update preview layout - two columns
-                contentColumns.style.gridTemplateColumns = '1fr 1fr';
-                parentColumn.style.display = 'block';
-                studentColumn.style.display = 'block';
-                studentColumn.classList.remove('career-column');
-                studentColumn.classList.add('student-column');
-
-                // Restore student column header for psychometric test
-                studentColumnHeader.innerHTML = `
-                    <div class="column-icon">
-                        <i class="fas fa-user-graduate"></i>
-                    </div>
-                    <h2>Student Actions</h2>
-                    <p class="column-subtitle">Daily practice & development</p>
-                `;
-
                 // Clear career todo
                 document.getElementById('careerTodo').value = '';
-                document.getElementById('previewStudentTodos').innerHTML = '';
-                document.getElementById('previewParentTodos').innerHTML = '';
-
-                parentEmptyState.style.display = 'flex';
-                studentEmptyState.style.display = 'flex';
             } else {
                 // No assessment selected
                 dualTodosRow.style.display = 'none';
                 singleTodoGroup.style.display = 'none';
-                parentColumn.style.display = 'block';
-                studentColumn.style.display = 'block';
-                contentColumns.style.gridTemplateColumns = '1fr 1fr';
             }
         }
 
@@ -437,38 +225,6 @@ Prepare for career discussions"></textarea>
             }
         }
 
-        function updateTasksPreview(type, text) {
-            const previewId = type === 'parentTodos' ? 'previewParentTodos' : 'previewStudentTodos';
-            const emptyStateId = type === 'parentTodos' ? 'parentEmptyState' : 'studentEmptyState';
-
-            const previewElement = document.getElementById(previewId);
-            const emptyStateElement = document.getElementById(emptyStateId);
-
-            if (!text.trim()) {
-                previewElement.innerHTML = '';
-                emptyStateElement.style.display = 'flex';
-                return;
-            }
-
-            emptyStateElement.style.display = 'none';
-
-            const tasks = text.split('\n').filter(task => task.trim() !== '');
-            let tasksHtml = '';
-
-            tasks.forEach(task => {
-                tasksHtml += `
-                    <div class="task-item">
-                        <div class="task-checkbox">
-                            <i class="far fa-square"></i>
-                        </div>
-                        <div class="task-text">${cleanText(task)}</div>
-                    </div>
-                `;
-            });
-
-            previewElement.innerHTML = tasksHtml;
-        }
-
         function setupPdfGeneration() {
             document.getElementById('downloadPdf').addEventListener('click', function (e) {
                 const studentName = document.getElementById('studentName').value.trim();
@@ -498,12 +254,12 @@ Prepare for career discussions"></textarea>
         function addWrappedText(pdf, text, x, y, maxWidth, lineHeight = 6) {
             const lines = pdf.splitTextToSize(text, maxWidth);
             let currentY = y;
-            
+
             for (let i = 0; i < lines.length; i++) {
                 pdf.text(lines[i], x, currentY);
                 currentY += lineHeight;
             }
-            
+
             return currentY;
         }
 
@@ -511,7 +267,7 @@ Prepare for career discussions"></textarea>
         function generatePdf() {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF("p", "mm", "a4");
-            
+
             const W = 210; // Page width in mm
             const H = 297; // Page height in mm
             const M = 20;  // Margin in mm
@@ -527,11 +283,11 @@ Prepare for career discussions"></textarea>
             const studentName = getVal("studentName");
             const assessmentType = getVal("assessmentType");
             const notes = getVal("counselorNotes");
-            
+
             // Get todos based on assessment type
             let parentTodos = [];
             let studentTodos = [];
-            
+
             if (assessmentType === 'Psychometric Test (Below 13)') {
                 parentTodos = getLines("parentTodos");
                 studentTodos = getLines("studentTodos");
@@ -546,12 +302,12 @@ Prepare for career discussions"></textarea>
             // Add header
             pdf.setFillColor(...BLUE);
             pdf.rect(0, 0, W, 25, "F");
-            
+
             pdf.setTextColor(255, 255, 255);
             pdf.setFontSize(16);
             pdf.setFont("helvetica", "bold");
             pdf.text("Brain Checker - Counselor Report", W / 2, 15, { align: "center" });
-            
+
             pdf.setTextColor(0, 0, 0);
             y = 35;
 
@@ -560,23 +316,23 @@ Prepare for career discussions"></textarea>
             pdf.rect(M, y, W - M * 2, 20, "F");
             pdf.setDrawColor(200, 200, 200);
             pdf.rect(M, y, W - M * 2, 20);
-            
+
             pdf.setFontSize(12);
             pdf.setFont("helvetica", "bold");
             pdf.text("Student Information", M + 5, y + 8);
-            
+
             pdf.setFontSize(11);
             pdf.setFont("helvetica", "normal");
             pdf.text(`Name: ${studentName}`, M + 5, y + 16);
             pdf.text(`Assessment: ${assessmentType}`, M + 100, y + 16);
-            
+
             y += 30;
 
             // Disclaimer
             pdf.setFontSize(10);
             pdf.setFont("helvetica", "italic");
             const disclaimerText = "This document contains personalized guidance based on the counseling session. It is not a clinical assessment or diagnostic report, but rather a daily reference tool for implementing recommended strategies.";
-            
+
             // Use splitTextToSize for disclaimer
             const disclaimerLines = pdf.splitTextToSize(disclaimerText, maxTextWidth);
             for (let i = 0; i < disclaimerLines.length; i++) {
@@ -596,34 +352,34 @@ Prepare for career discussions"></textarea>
                     pdf.addPage();
                     y = M;
                 }
-                
+
                 pdf.setFillColor(...BOX_BG);
                 pdf.rect(M, y, W - M * 2, 15, "F");
                 pdf.setDrawColor(200, 200, 200);
                 pdf.rect(M, y, W - M * 2, 15);
-                
+
                 pdf.setFontSize(12);
                 pdf.setFont("helvetica", "bold");
                 pdf.text("Parent Guidance - Daily Support Strategies", M + 5, y + 10);
                 y += 20;
-                
+
                 pdf.setFontSize(11);
                 pdf.setFont("helvetica", "normal");
-                
+
                 // Process each parent task with text wrapping
                 for (let i = 0; i < parentTodos.length; i++) {
                     const task = parentTodos[i];
-                    
+
                     // Check if we need a new page before adding this task
                     if (y > H - 30) {
                         pdf.addPage();
                         y = M;
                     }
-                    
+
                     // Add bullet and task text with wrapping
                     const bulletTask = `• ${task}`;
                     const taskLines = pdf.splitTextToSize(bulletTask, maxTextWidth);
-                    
+
                     for (let j = 0; j < taskLines.length; j++) {
                         // Check if we need a new page for this line
                         if (y > H - 20) {
@@ -633,7 +389,7 @@ Prepare for career discussions"></textarea>
                         pdf.text(taskLines[j], M + 5, y);
                         y += 6;
                     }
-                    
+
                     // Add space between tasks
                     y += 2;
                 }
@@ -647,38 +403,38 @@ Prepare for career discussions"></textarea>
                     pdf.addPage();
                     y = M;
                 }
-                
-                const sectionTitle = assessmentType === 'Career Guidance (13+)' 
-                    ? "To-Do List - Daily Actions & Goals" 
+
+                const sectionTitle = assessmentType === 'Career Guidance (13+)'
+                    ? "To-Do List - Daily Actions & Goals"
                     : "Student Actions - Daily Practice & Development";
-                
+
                 pdf.setFillColor(...BOX_BG);
                 pdf.rect(M, y, W - M * 2, 15, "F");
                 pdf.setDrawColor(200, 200, 200);
                 pdf.rect(M, y, W - M * 2, 15);
-                
+
                 pdf.setFontSize(12);
                 pdf.setFont("helvetica", "bold");
                 pdf.text(sectionTitle, M + 5, y + 10);
                 y += 20;
-                
+
                 pdf.setFontSize(11);
                 pdf.setFont("helvetica", "normal");
-                
+
                 // Process each student task with text wrapping
                 for (let i = 0; i < studentTodos.length; i++) {
                     const task = studentTodos[i];
-                    
+
                     // Check if we need a new page before adding this task
                     if (y > H - 30) {
                         pdf.addPage();
                         y = M;
                     }
-                    
+
                     // Add bullet and task text with wrapping
                     const bulletTask = `• ${task}`;
                     const taskLines = pdf.splitTextToSize(bulletTask, maxTextWidth);
-                    
+
                     for (let j = 0; j < taskLines.length; j++) {
                         // Check if we need a new page for this line
                         if (y > H - 20) {
@@ -688,7 +444,7 @@ Prepare for career discussions"></textarea>
                         pdf.text(taskLines[j], M + 5, y);
                         y += 6;
                     }
-                    
+
                     // Add space between tasks
                     y += 2;
                 }
@@ -702,20 +458,20 @@ Prepare for career discussions"></textarea>
                     pdf.addPage();
                     y = M;
                 }
-                
+
                 pdf.setFillColor(...NOTE_BG);
                 pdf.rect(M, y, W - M * 2, 15, "F");
                 pdf.setDrawColor(200, 200, 200);
                 pdf.rect(M, y, W - M * 2, 15);
-                
+
                 pdf.setFontSize(12);
                 pdf.setFont("helvetica", "bold");
                 pdf.text("Counselor Notes & Recommendations", M + 5, y + 10);
                 y += 20;
-                
+
                 pdf.setFontSize(11);
                 pdf.setFont("helvetica", "normal");
-                
+
                 // Use splitTextToSize for notes
                 const noteLines = pdf.splitTextToSize(notes, maxTextWidth);
                 for (let i = 0; i < noteLines.length; i++) {
@@ -781,19 +537,8 @@ Prepare for career discussions"></textarea>
                     document.getElementById('careerTodo').value = '';
                     document.getElementById('counselorNotes').value = '';
 
-                    // Update preview
-                    document.getElementById('previewStudentName').textContent = '{{studentName}}';
-                    document.getElementById('previewAssessmentType').textContent = '{{assessmentType}}';
-                    document.getElementById('previewParentTodos').innerHTML = '';
-                    document.getElementById('previewStudentTodos').innerHTML = '';
-                    document.getElementById('previewCounselorNotes').textContent = '';
-
-                    document.getElementById('parentEmptyState').style.display = 'flex';
-                    document.getElementById('studentEmptyState').style.display = 'flex';
-
-                    // Hide layout rows
-                    document.getElementById('dualTodosRow').style.display = 'none';
-                    document.getElementById('singleTodoGroup').style.display = 'none';
+                    // Reset the layout
+                    toggleAssessmentLayout('');
 
                     validateForm();
                 }
