@@ -12,6 +12,9 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- <script src="script.js"></script> -->
+
 </head>
 
 <body>
@@ -25,7 +28,7 @@
                         <a href="https://brainchecker.in/"><img src="assets/Brain Checker Logo.png"
                                 alt="Brain Checker logo" height="80"></a>
                     </div>
-                    <div class="document-type">Personalized Action Plan</div>
+                    <div class="document-type">Counselor Report</div>
                 </div>
 
                 <div class="student-info">
@@ -130,7 +133,7 @@
             <!-- Footer -->
             <footer class="pdf-footer">
                 <div class="footer-content">
-                    <p>This personalized action plan was created by your Brain Checker counselor. For questions or
+                    <p>This Counselor Report was created by your Brain Checker counselor. For questions or
                         follow-up, please contact your counseling session provider.</p>
                     <div class="footer-meta">
                         <span>Generated on: {{currentDate}}</span>
@@ -181,7 +184,7 @@ Read for pleasure 20 minutes daily"></textarea>
             <div class="form-group" id="singleTodoGroup" style="display: none;">
                 <label for="careerTodo"><i class="fas fa-tasks"></i> To-Do List</label>
                 <p class="help-text">Enter one task per line</p>
-                <textarea id="careerTodo" rows="8" placeholder="Example: Explore career interests
+                    <textarea id="careerTodo" rows="8" placeholder="Example: Explore career interests
 Research potential career paths
 Prepare for career discussions"></textarea>
             </div>
@@ -222,7 +225,7 @@ Prepare for career discussions"></textarea>
                 <span class="close-modal">&times;</span>
             </div>
             <div class="modal-body">
-                <p>Your personalized action plan has been generated and should start downloading automatically.</p>
+                <p>Your Counselor Report has been generated and should start downloading automatically.</p>
                 <p>If the download doesn't start, please check your browser's download settings or try again.</p>
             </div>
         </div>
@@ -243,59 +246,35 @@ Prepare for career discussions"></textarea>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
+        // Helper functions
+        function cleanText(text) {
+            if (!text) return "";
+            return text
+                .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+                .replace(/[&]+/g, '') // Remove ampersands completely
+                .replace(/[•●▪■◆►▶◦]/g, '') // Remove special bullet characters
+                .replace(/\s+/g, ' ') // Normalize whitespace
+                .trim();
+        }
+
         function getVal(id) {
-  return document.getElementById(id)?.value || "";
-}
+            const element = document.getElementById(id);
+            return element ? element.value.trim() : "";
+        }
 
-function getLines(id) {
-  return getVal(id)
-    .split("\n")
-    .map(l => l.trim())
-    .filter(Boolean);
-}
+        function getLines(id) {
+            return getVal(id)
+                .split('\n')
+                .map(line => cleanText(line))
+                .filter(line => line.length > 0);
+        }
 
-function sectionTitle(pdf, text, y) {
-  pdf.setFont("Helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text(text, 20, y);
-
-  pdf.setDrawColor(79, 70, 229);
-  pdf.setLineWidth(0.8);
-  pdf.line(20, y + 2, 190, y + 2);
-
-  return y + 10;
-}
-
-function drawTodoList(pdf, items, y) {
-  const margin = 20;
-  const pageHeight = 297;
-
-  pdf.setFont("Helvetica", "normal");
-  pdf.setFontSize(11);
-
-  items.forEach(item => {
-    if (y > pageHeight - 20) {
-      pdf.addPage();
-      y = margin;
-    }
-
-    pdf.rect(margin, y - 4, 4, 4); // checkbox
-    pdf.text(item, margin + 8, y, {
-      maxWidth: 160,
-    });
-    y += 6;
-  });
-
-  return y + 6;
-}
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
 
         // Initialize with current date
-        // Note: helper functions `getVal`, `getLines`, `sectionTitle`, and `drawTodoList` are defined above to avoid duplication.
-
-
         document.addEventListener('DOMContentLoaded', function () {
             const currentDate = new Date().toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -335,7 +314,7 @@ function drawTodoList(pdf, items, y) {
                         if (inputId === 'parentTodos' || inputId === 'studentTodos') {
                             updateTasksPreview(inputId, this.value);
                         } else if (inputId === 'careerTodo') {
-                            updateTasksPreview('studentTodos', this.value); // Use studentTodos preview for career to-do
+                            updateTasksPreview('studentTodos', this.value);
                         } else if (previewElement) {
                             previewElement.textContent = this.value;
                         }
@@ -482,7 +461,7 @@ function drawTodoList(pdf, items, y) {
                         <div class="task-checkbox">
                             <i class="far fa-square"></i>
                         </div>
-                        <div class="task-text">${task.trim()}</div>
+                        <div class="task-text">${cleanText(task)}</div>
                     </div>
                 `;
             });
@@ -506,8 +485,6 @@ function drawTodoList(pdf, items, y) {
                     isValid = isValid && careerTodo !== '';
                 }
 
-                console.log('downloadPdf clicked', { studentName, assessmentType, isValid });
-
                 if (!isValid) {
                     e.preventDefault();
                     showValidationModal();
@@ -517,137 +494,258 @@ function drawTodoList(pdf, items, y) {
             });
         }
 
-        // High-quality, direct-download PDF generator (emulates Print look)
-       function generatePdf() {
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p", "mm", "a4");
+        // Helper function to add text with wrapping
+        function addWrappedText(pdf, text, x, y, maxWidth, lineHeight = 6) {
+            const lines = pdf.splitTextToSize(text, maxWidth);
+            let currentY = y;
+            
+            for (let i = 0; i < lines.length; i++) {
+                pdf.text(lines[i], x, currentY);
+                currentY += lineHeight;
+            }
+            
+            return currentY;
+        }
 
-  const pageWidth = 210;
-  const pageHeight = 297;
-  const margin = 20;
-  let y = 20;
+        // PDF Generation Functions
+        function generatePdf() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF("p", "mm", "a4");
+            
+            const W = 210; // Page width in mm
+            const H = 297; // Page height in mm
+            const M = 20;  // Margin in mm
+            const maxTextWidth = W - (M * 2) - 10; // Width available for text (minus margin and padding)
+            let y = M;     // Current Y position
 
-  const studentName = getVal("studentName");
-  const assessmentType = getVal("assessmentType");
-  const parentTodos = getLines("parentTodos");
-  const studentTodos =
-    assessmentType.includes("Career")
-      ? getLines("careerTodo")
-      : getLines("studentTodos");
-  const counselorNotes = getVal("counselorNotes");
+            // Colors
+            const BLUE = [33, 64, 154];
+            const BOX_BG = [240, 245, 255];
+            const NOTE_BG = [254, 252, 232];
 
-  /* =========================
-     HEADER BAR
-  ========================= */
-  pdf.setFillColor(79, 70, 229); // Indigo
-  pdf.rect(0, 0, pageWidth, 25, "F");
+            // Get form values
+            const studentName = getVal("studentName");
+            const assessmentType = getVal("assessmentType");
+            const notes = getVal("counselorNotes");
+            
+            // Get todos based on assessment type
+            let parentTodos = [];
+            let studentTodos = [];
+            
+            if (assessmentType === 'Psychometric Test (Below 13)') {
+                parentTodos = getLines("parentTodos");
+                studentTodos = getLines("studentTodos");
+            } else if (assessmentType === 'Career Guidance (13+)') {
+                studentTodos = getLines("careerTodo");
+            }
 
-  pdf.setFont("Helvetica", "bold");
-  pdf.setFontSize(18);
-  pdf.setTextColor(255, 255, 255);
-  pdf.text("Personalized Action Plan", pageWidth / 2, 16, {
-    align: "center",
-  });
+            // Set default font
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(11);
 
-  pdf.setTextColor(0, 0, 0);
-  y = 35;
+            // Add header
+            pdf.setFillColor(...BLUE);
+            pdf.rect(0, 0, W, 25, "F");
+            
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(16);
+            pdf.setFont("helvetica", "bold");
+            pdf.text("Brain Checker - Counselor Report", W / 2, 15, { align: "center" });
+            
+            pdf.setTextColor(0, 0, 0);
+            y = 35;
 
-  /* =========================
-     STUDENT INFO BOX
-  ========================= */
-  pdf.setDrawColor(200);
-  pdf.rect(margin, y, pageWidth - margin * 2, 22);
+            // Student Info Section
+            pdf.setFillColor(...BOX_BG);
+            pdf.rect(M, y, W - M * 2, 20, "F");
+            pdf.setDrawColor(200, 200, 200);
+            pdf.rect(M, y, W - M * 2, 20);
+            
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "bold");
+            pdf.text("Student Information", M + 5, y + 8);
+            
+            pdf.setFontSize(11);
+            pdf.setFont("helvetica", "normal");
+            pdf.text(`Name: ${studentName}`, M + 5, y + 16);
+            pdf.text(`Assessment: ${assessmentType}`, M + 100, y + 16);
+            
+            y += 30;
 
-  pdf.setFontSize(11);
-  pdf.setFont("Helvetica", "normal");
-  pdf.text(`Student Name: ${studentName}`, margin + 5, y + 7);
-  pdf.text(`Assessment Type: ${assessmentType}`, margin + 5, y + 14);
-  pdf.text(
-    `Date: ${new Date().toLocaleDateString()}`,
-    pageWidth - margin - 60,
-    y + 7
-  );
+            // Disclaimer
+            pdf.setFontSize(10);
+            pdf.setFont("helvetica", "italic");
+            const disclaimerText = "This document contains personalized guidance based on the counseling session. It is not a clinical assessment or diagnostic report, but rather a daily reference tool for implementing recommended strategies.";
+            
+            // Use splitTextToSize for disclaimer
+            const disclaimerLines = pdf.splitTextToSize(disclaimerText, maxTextWidth);
+            for (let i = 0; i < disclaimerLines.length; i++) {
+                if (y > H - 20) {
+                    pdf.addPage();
+                    y = M;
+                }
+                pdf.text(disclaimerLines[i], M, y);
+                y += 5;
+            }
+            y += 10;
 
-  y += 32;
+            // Parent Todos (only for Psychometric Test)
+            if (assessmentType === 'Psychometric Test (Below 13)' && parentTodos.length > 0) {
+                // Check if we need a new page before starting this section
+                if (y > H - 40) {
+                    pdf.addPage();
+                    y = M;
+                }
+                
+                pdf.setFillColor(...BOX_BG);
+                pdf.rect(M, y, W - M * 2, 15, "F");
+                pdf.setDrawColor(200, 200, 200);
+                pdf.rect(M, y, W - M * 2, 15);
+                
+                pdf.setFontSize(12);
+                pdf.setFont("helvetica", "bold");
+                pdf.text("Parent Guidance - Daily Support Strategies", M + 5, y + 10);
+                y += 20;
+                
+                pdf.setFontSize(11);
+                pdf.setFont("helvetica", "normal");
+                
+                // Process each parent task with text wrapping
+                for (let i = 0; i < parentTodos.length; i++) {
+                    const task = parentTodos[i];
+                    
+                    // Check if we need a new page before adding this task
+                    if (y > H - 30) {
+                        pdf.addPage();
+                        y = M;
+                    }
+                    
+                    // Add bullet and task text with wrapping
+                    const bulletTask = `• ${task}`;
+                    const taskLines = pdf.splitTextToSize(bulletTask, maxTextWidth);
+                    
+                    for (let j = 0; j < taskLines.length; j++) {
+                        // Check if we need a new page for this line
+                        if (y > H - 20) {
+                            pdf.addPage();
+                            y = M;
+                        }
+                        pdf.text(taskLines[j], M + 5, y);
+                        y += 6;
+                    }
+                    
+                    // Add space between tasks
+                    y += 2;
+                }
+                y += 5;
+            }
 
-  /* =========================
-     DISCLAIMER
-  ========================= */
-  pdf.setFontSize(10);
-  pdf.setTextColor(90);
-  pdf.text(
-    "This guidance is intended for support and direction only and does not replace professional, medical, or psychological advice.",
-    margin,
-    y,
-    { maxWidth: pageWidth - margin * 2 }
-  );
+            // Student/Career Todos
+            if (studentTodos.length > 0) {
+                // Check if we need a new page before starting this section
+                if (y > H - 40) {
+                    pdf.addPage();
+                    y = M;
+                }
+                
+                const sectionTitle = assessmentType === 'Career Guidance (13+)' 
+                    ? "To-Do List - Daily Actions & Goals" 
+                    : "Student Actions - Daily Practice & Development";
+                
+                pdf.setFillColor(...BOX_BG);
+                pdf.rect(M, y, W - M * 2, 15, "F");
+                pdf.setDrawColor(200, 200, 200);
+                pdf.rect(M, y, W - M * 2, 15);
+                
+                pdf.setFontSize(12);
+                pdf.setFont("helvetica", "bold");
+                pdf.text(sectionTitle, M + 5, y + 10);
+                y += 20;
+                
+                pdf.setFontSize(11);
+                pdf.setFont("helvetica", "normal");
+                
+                // Process each student task with text wrapping
+                for (let i = 0; i < studentTodos.length; i++) {
+                    const task = studentTodos[i];
+                    
+                    // Check if we need a new page before adding this task
+                    if (y > H - 30) {
+                        pdf.addPage();
+                        y = M;
+                    }
+                    
+                    // Add bullet and task text with wrapping
+                    const bulletTask = `• ${task}`;
+                    const taskLines = pdf.splitTextToSize(bulletTask, maxTextWidth);
+                    
+                    for (let j = 0; j < taskLines.length; j++) {
+                        // Check if we need a new page for this line
+                        if (y > H - 20) {
+                            pdf.addPage();
+                            y = M;
+                        }
+                        pdf.text(taskLines[j], M + 5, y);
+                        y += 6;
+                    }
+                    
+                    // Add space between tasks
+                    y += 2;
+                }
+                y += 5;
+            }
 
-  pdf.setTextColor(0);
-  y += 15;
+            // Counselor Notes
+            if (notes) {
+                // Check if we need a new page before starting this section
+                if (y > H - 40) {
+                    pdf.addPage();
+                    y = M;
+                }
+                
+                pdf.setFillColor(...NOTE_BG);
+                pdf.rect(M, y, W - M * 2, 15, "F");
+                pdf.setDrawColor(200, 200, 200);
+                pdf.rect(M, y, W - M * 2, 15);
+                
+                pdf.setFontSize(12);
+                pdf.setFont("helvetica", "bold");
+                pdf.text("Counselor Notes & Recommendations", M + 5, y + 10);
+                y += 20;
+                
+                pdf.setFontSize(11);
+                pdf.setFont("helvetica", "normal");
+                
+                // Use splitTextToSize for notes
+                const noteLines = pdf.splitTextToSize(notes, maxTextWidth);
+                for (let i = 0; i < noteLines.length; i++) {
+                    if (y > H - 20) {
+                        pdf.addPage();
+                        y = M;
+                    }
+                    pdf.text(noteLines[i], M + 5, y);
+                    y += 6;
+                }
+                y += 10;
+            }
 
-  /* =========================
-     PARENT TODO (ONLY FOR PSYCHOMETRIC)
-  ========================= */
-  if (assessmentType.includes("Psychometric")) {
-    y = sectionTitle(pdf, "Parent To-Do List", y);
-    y = drawTodoList(pdf, parentTodos, y);
-  }
+            // Footer
+            pdf.setFontSize(9);
+            pdf.setFont("helvetica", "italic");
+            const currentDate = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            pdf.text(`Generated on: ${currentDate} • Confidential - For family use only`, W / 2, H - 10, { align: "center" });
 
-  /* =========================
-     STUDENT TODO
-  ========================= */
-  y = sectionTitle(
-    pdf,
-    assessmentType.includes("Career")
-      ? "Student Career To-Do List"
-      : "Student To-Do List",
-    y
-  );
-  y = drawTodoList(pdf, studentTodos, y);
+            // Save PDF
+            const fileName = `BrainChecker_Report_${studentName.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+            pdf.save(fileName);
 
-  /* =========================
-     COUNSELOR NOTES
-  ========================= */
-  if (counselorNotes) {
-    if (y > pageHeight - 60) {
-      pdf.addPage();
-      y = margin;
-    }
-
-    pdf.setFillColor(254, 252, 232); // Soft yellow
-    pdf.rect(margin - 2, y - 6, pageWidth - margin * 2 + 4, 36, "F");
-
-    pdf.setFont("Helvetica", "bold");
-    pdf.setFontSize(13);
-    pdf.text("Counselor Notes", margin, y);
-    y += 7;
-
-    pdf.setFont("Helvetica", "normal");
-    pdf.setFontSize(11);
-    const noteLines = pdf.splitTextToSize(
-      counselorNotes,
-      pageWidth - margin * 2
-    );
-    pdf.text(noteLines, margin, y);
-    y += noteLines.length * 6 + 10;
-  }
-
-  /* =========================
-     FOOTER
-  ========================= */
-  pdf.setFontSize(9);
-  pdf.setTextColor(120);
-  pdf.text(
-    "Brain Checker • Confidential • For family use only",
-    pageWidth / 2,
-    290,
-    { align: "center" }
-  );
-
-  pdf.setTextColor(0);
-  pdf.save(`BrainChecker_Action_Plan_${Date.now()}.pdf`);
-}
-
+            // Show success modal
+            document.getElementById('successModal').style.display = 'flex';
+        }
 
         function setupModal() {
             const modal = document.getElementById('successModal');
@@ -725,12 +823,7 @@ function drawTodoList(pdf, items, y) {
 
             missingFieldsList.innerHTML = missingFields.map(field => `<li><i class="fas fa-exclamation-triangle"></i> ${field}</li>`).join('');
 
-            console.log('Showing validation modal');
             validationModal.style.display = 'flex';
-        }
-
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
         }
     </script>
 </body>
