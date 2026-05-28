@@ -346,9 +346,17 @@ textarea{resize:vertical;line-height:1.6}
         <label>Assessment Type</label>
         <select id="assessmentType">
           <option value="">-- Select Assessment --</option>
-          <option value="Psychometric">Psychometric</option>
-          <option value="Career Counseling">Career Counseling</option>
-          <option value="Academic Support">Academic Support</option>
+          <option value="DMIT">DMIT</option>
+          <option value="Career Planning (Combo)">Career Planning (Combo)</option>
+          <option value="Psychometric Assessment (Standalone)">Psychometric Assessment (Standalone)</option>
+          <option value="Polaris for Corporate Employees (Standalone)">Polaris for Corporate Employees (Standalone)</option>
+          <option value="Polaris Combo">Polaris Combo</option>
+          <option value="Brain Checker Engineering Sorter Test (BEST)">Brain Checker Engineering Sorter Test (BEST)</option>
+          <option value="BEST (Combo)">BEST (Combo)</option>
+          <option value="Tycoon (Standalone)">Tycoon (Standalone)</option>
+          <option value="Tycoon (Combo)">Tycoon (Combo)</option>
+          <option value="Hiring Assessment">Hiring Assessment</option>
+          <option value="Hiring Assessment (Comparison)">Hiring Assessment (Comparison)</option>
         </select>
       </div>
     </div>
@@ -489,9 +497,23 @@ const val = id => $(id)?.value || '';
 const lines = id => val(id).split('\n').map(x => x.trim()).filter(Boolean);
 
 function toggleLayout(type){
-  $('parentCard').style.display = type.includes('Psychometric') ? 'block' : 'none';
-  $('careerCard').style.display = type.includes('Career') ? 'block' : 'none';
-  const lbl = type.includes('Career') ? 'Career Actions' : 'Student Actions';
+  // Show parent card for Combo assessments and Psychometric Standalone
+  const showParent = type.includes('Combo') || type.includes('Psychometric Assessment (Standalone)');
+  $('parentCard').style.display = showParent ? 'block' : 'none';
+  
+  // Show career card for Career Planning types
+  const showCareer = type.includes('Career Planning');
+  $('careerCard').style.display = showCareer ? 'block' : 'none';
+  
+  // Update label
+  let lbl = 'Student Actions';
+  if (showCareer) lbl = 'Career Actions';
+  else if (type.includes('Hiring')) lbl = 'Hiring Feedback';
+  else if (type.includes('BEST')) lbl = 'Engineering Assessment Actions';
+  else if (type.includes('Tycoon')) lbl = 'Business Simulation Actions';
+  else if (type.includes('Polaris')) lbl = 'Polaris Assessment Actions';
+  else if (type.includes('DMIT')) lbl = 'DMIT Analysis Actions';
+  
   $('studentLabel').textContent = lbl;
   $('todoLabel').textContent = lbl;
 }
@@ -510,12 +532,13 @@ function updatePreview(){
   $('previewType').textContent = type;
   $('dateChip').textContent = new Date().toLocaleDateString();
 
-  const isPsy = type.includes('Psychometric');
-  const pItems = isPsy ? lines('parentTodos') : [];
-  const sItems = type.includes('Career') ? lines('careerTodo') : lines('studentTodos');
+  const isCombo = type.includes('Combo') || type.includes('Psychometric Assessment (Standalone)');
+  const isCareer = type.includes('Career Planning');
+  const pItems = isCombo ? lines('parentTodos') : [];
+  const sItems = isCareer ? lines('careerTodo') : lines('studentTodos');
 
   let html = '';
-  if (isPsy && pItems.length) {
+  if (isCombo && pItems.length) {
     html += '<div class="pv-section-title"><div class="pv-section-bar"></div><div class="pv-section-label">Parent Guidance</div></div>';
     pItems.forEach((t,i) => {
       html += `<div class="pv-item left"><div class="pv-num left">${i+1}</div><div class="pv-item-text">${t}</div></div>`;
@@ -524,7 +547,8 @@ function updatePreview(){
   }
 
   if (sItems.length) {
-    html += '<div class="pv-section-title"><div class="pv-section-bar"></div><div class="pv-section-label">Student Actions</div></div>';
+    const actionLabel = isCareer ? 'Career Actions' : 'Assessment Actions';
+    html += '<div class="pv-section-title"><div class="pv-section-bar"></div><div class="pv-section-label">' + actionLabel + '</div></div>';
     sItems.forEach((t,i) => {
       html += `<div class="pv-item"><div class="pv-num">${i+1}</div><div class="pv-item-text">${t}</div></div>`;
     });
@@ -550,11 +574,18 @@ function validate(){
     ['assessmentType', 'Assessment Type']
   ];
   const type = val('assessmentType');
-  if (type.includes('Psychometric') && !lines('parentTodos').length) checks.push(['parentTodos', 'Parent Actions']);
-  if (type.includes('Career')) {
+  
+  // Combo assessments require parent actions
+  if (type.includes('Combo') || type.includes('Psychometric Assessment (Standalone)')) {
+    if (!lines('parentTodos').length) checks.push(['parentTodos', 'Parent Actions']);
+  }
+  
+  // Career Planning requires career actions
+  if (type.includes('Career Planning')) {
     if (!lines('careerTodo').length) checks.push(['careerTodo', 'Career Actions']);
   } else {
-    if (!lines('studentTodos').length) checks.push(['studentTodos', 'Student Actions']);
+    // All other types require student/assessment actions
+    if (!lines('studentTodos').length) checks.push(['studentTodos', 'Assessment Actions']);
   }
 
   const missing = [];
@@ -771,12 +802,13 @@ function generatePdf(){
   drawStrip();
   drawDisclaimer();
   const type = val('assessmentType');
-  const isPsy = type.includes('Psychometric');
-  const pItems = isPsy ? lines('parentTodos') : [];
-  const sItems = type.includes('Career') ? lines('careerTodo') : lines('studentTodos');
+  const isCombo = type.includes('Combo') || type.includes('Psychometric Assessment (Standalone)');
+  const isCareer = type.includes('Career Planning');
+  const pItems = isCombo ? lines('parentTodos') : [];
+  const sItems = isCareer ? lines('careerTodo') : lines('studentTodos');
   const notes = val('counselorNotes').trim();
 
-  if(isPsy){drawTwoCol(pItems,sItems);}
+  if(isCombo){drawTwoCol(pItems,sItems);}
   else{drawSectionTitle('To-Do List — Daily Actions & Goals');sItems.forEach(function(t,i){drawItemSingle(i+1,t);});y+=px(6);}
   if(notes)drawNotes(notes);
   drawFooters(doc.getNumberOfPages());
