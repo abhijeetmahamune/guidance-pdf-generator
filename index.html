@@ -1,584 +1,811 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brain Checker - Guidance PDF Generator</title>
-    <link rel="stylesheet" href="template.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Checker — Guidance PDF Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --navy: #0B1F3A;
+  --indigo: #1A3A6B;
+  --sky: #2D7DD2;
+  --cyan: #06B6D4;
+  --teal: #1AA6A6;
+  --gold: #F0A500;
+  --cream: #F5F6FA;
+  --ink: #1A1A2E;
+  --muted: #6B7A99;
+  --border: #DDE3F0;
+}
+
+html.light-mode {
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #ffffff;
+  --bg-nav: #ffffff;
+  --text-primary: #0b1f3a;
+  --text-secondary: #6b7a99;
+  --text-muted: #94a3b8;
+  --input-bg: #f8fafc;
+  --input-border: #dde3f0;
+  --card-bg: #ffffff;
+  --preview-bg: #ffffff;
+}
+
+html.dark-mode {
+  --bg-primary: #0f1419;
+  --bg-secondary: #1a2332;
+  --bg-nav: #0b1017;
+  --text-primary: #e3e8f0;
+  --text-secondary: #a0aab8;
+  --text-muted: #7a8699;
+  --input-bg: #1a2332;
+  --input-border: #2d3a4d;
+  --card-bg: #1a2332;
+  --preview-bg: #0f1419;
+}
+
+body{font-family:"DM Sans",sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;display:flex;flex-direction:column;font-size:16px;transition:background-color .3s, color .3s}
+
+/* Navigation */
+.nav{background:var(--bg-nav);padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.08);border-bottom:1px solid var(--input-border);transition:all .3s}
+
+.nav h1{font-family:"DM Serif Display",serif;font-size:1.5rem;color:var(--text-primary);line-height:1;margin:0}
+
+.nav p{font-size:.9rem;color:var(--text-secondary);margin:0;margin-top:2px}
+
+.nav-right{margin-left:auto;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .3s;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.theme-toggle:hover {
+  background: var(--cyan);
+  color: #ffffff;
+  border-color: var(--cyan);
+}
+
+/* Layout */
+.split{display:grid;grid-template-columns:400px 1fr;flex:1;overflow:hidden;min-height:0}
+
+@media(max-width:860px){.split{grid-template-columns:1fr}}
+
+@media(max-width:600px){
+  .nav{padding:.75rem 1rem}
+  .nav h1{font-size:1.1rem}
+  .nav p{font-size:.8rem}
+  .nav-right{gap:.5rem}
+  .theme-toggle{width:40px;height:40px;font-size:.9rem}
+}
+
+.form-panel{overflow-y:auto;padding:1.25rem;background:var(--bg-primary);border-right:1px solid var(--input-border);transition:all .3s}
+
+@media(max-width:860px){.form-panel{padding:1rem;max-height:50vh;border-right:none;border-bottom:1px solid var(--input-border)}}
+
+@media(max-width:600px){.form-panel{padding:.75rem;max-height:none}}
+
+/* Cards */
+.card{background:var(--card-bg);border:1px solid var(--input-border);border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:all .3s}
+
+@media(max-width:600px){.card{padding:.75rem;margin-bottom:.6rem}.card-head{font-size:.83rem;padding-bottom:.4rem;margin-bottom:.6rem}}
+
+.card-head{font-family:"DM Serif Display",serif;font-size:.95rem;color:var(--text-primary);margin-bottom:.9rem;padding-bottom:.6rem;border-bottom:1px solid var(--input-border);display:flex;align-items:center;gap:.4rem}
+
+.card-head i{color:var(--cyan);font-size:.8rem}
+
+.fg{margin-bottom:.9rem}
+
+.fg:last-child{margin-bottom:0}
+
+label{display:block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.35rem}
+
+input,select,textarea{width:100%;font-family:"DM Sans",sans-serif;font-size:.88rem;color:var(--text-primary);background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:8px;padding:.55rem .8rem;outline:none;transition:border-color .18s, background-color .3s;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+
+@media(max-width:600px){input,select,textarea{font-size:1rem;padding:.7rem;border-radius:6px}}
+
+input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(6,182,212,.15);background:var(--card-bg)}
+
+textarea{resize:vertical;line-height:1.6}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+
+@media(max-width:600px){.two-col{grid-template-columns:1fr}}
+
+.help{font-size:.7rem;color:var(--text-muted);margin-bottom:.3rem}
+
+.pill{display:inline-block;background:rgba(6,182,212,.15);color:var(--cyan);font-size:.67rem;font-weight:600;padding:.15rem .55rem;border-radius:20px;margin-left:.35rem;vertical-align:middle}
+
+/* Buttons */
+.btn{font-family:"DM Sans",sans-serif;font-size:.82rem;font-weight:600;padding:.55rem 1.2rem;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;white-space:nowrap}
+
+@media(max-width:600px){.btn{padding:.6rem 1rem;font-size:.8rem;min-height:44px}}
+
+.btn:active{transform:scale(.97)}
+
+.btn-primary{background:var(--cyan);color:#ffffff;box-shadow:0 3px 10px rgba(6,182,212,.22);font-weight:600}
+
+.btn-primary:hover:not(:disabled){background:#0891b2;box-shadow:0 5px 14px rgba(6,182,212,.32)}
+
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+
+.btn-outline{background:transparent;color:var(--text-secondary);border:1.5px solid var(--input-border)}
+
+.btn-outline:hover{background:var(--input-bg);color:var(--text-primary)}
+
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;display:none;animation:spin .7s linear infinite}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.btn-primary.loading .spin{display:inline-block}
+
+.btn-primary.loading .bi{display:none}
+
+/* Preview Panel */
+.preview-panel{overflow-y:auto;background:var(--preview-bg);display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem 2.5rem;transition:all .3s}
+
+@media(max-width:860px){.preview-panel{padding:1rem;max-height:50vh}}
+
+@media(max-width:600px){.preview-panel{max-height:none;padding:.75rem}}
+
+.pv-label{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;align-self:flex-start}
+
+.pv-page{background:#fff;width:595px;box-shadow:0 6px 32px rgba(0,0,0,.12);border-radius:2px;overflow:hidden;flex-shrink:0}
+
+@media(max-width:680px){.pv-page{width:100%}}
+
+.pv-header{background:var(--navy);height:130px;position:relative;overflow:hidden;display:flex;align-items:center;padding:0 48px;gap:16px}
+
+.pv-header::after{content:"";position:absolute;right:0;top:0;width:0;height:0;border-style:solid;border-width:0 100px 130px 0;border-color:transparent var(--teal) transparent transparent}
+
+.pv-logo-wrap{background:var(--navy);border-radius:5px;padding:5px 7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;height:46px}
+
+.pv-logo-wrap img{height:36px;object-fit:contain}
+
+.pv-header-text{z-index:1}
+
+.pv-header-title{font-family:"DM Serif Display",serif;font-size:1.5rem;color:#fff;font-weight:400}
+
+.pv-header-sub{font-size:.72rem;color:rgba(180,210,245,.85);margin-top:2px}
+
+.pv-date-chip{margin-left:auto;background:var(--indigo);border-radius:4px;padding:.22rem .7rem;font-size:.6rem;color:rgba(180,210,245,.85);white-space:nowrap;z-index:1}
+
+.pv-gold{height:7px;background:var(--gold)}
+
+.pv-body{padding:18px 48px 28px}
+
+.pv-strip{background:var(--indigo);border-radius:7px;padding:11px 14px;margin-bottom:13px;display:flex;align-items:center}
+
+.pv-strip-bar{width:4px;border-radius:2px;background:var(--cyan);margin-right:10px;align-self:stretch;min-height:30px}
+
+.pv-strip-name{font-size:.88rem;font-weight:600;color:#fff}
+
+.pv-strip-type{font-size:.65rem;color:rgba(180,210,245,.8);margin-top:2px}
+
+.pv-confidential{margin-left:auto;background:var(--teal);border-radius:4px;padding:.2rem .55rem;font-size:.55rem;font-weight:700;color:#fff;letter-spacing:.05em;white-space:nowrap}
+
+.pv-disclaimer{font-size:.61rem;color:#888;font-style:italic;line-height:1.55;margin-bottom:10px}
+
+.pv-divider{height:1px;background:var(--input-border);margin-bottom:13px}
+
+.pv-cols{display:grid;grid-template-columns:1fr 1px 1fr;gap:0;margin-bottom:12px}
+
+.pv-col-sep{background:repeating-linear-gradient(to bottom,var(--input-border) 0,var(--input-border) 4px,transparent 4px,transparent 8px)}
+
+.pv-col{padding:0 9px}
+
+.pv-col:first-child{padding-left:0}
+
+.pv-col:last-child{padding-right:0}
+
+.pv-col-head{border-radius:5px;padding:8px 10px;margin-bottom:7px;position:relative;overflow:hidden}
+
+.pv-col-head::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+
+.pv-col-head.left{background:rgba(6,182,212,.1)}
+
+.pv-col-head.left::before{background:var(--cyan)}
+
+.pv-col-head.right{background:rgba(26,166,166,.1)}
+
+.pv-col-head.right::before{background:var(--teal)}
+
+.pv-col-title{font-size:.72rem;font-weight:600;color:var(--navy);margin-top:2px}
+
+.pv-col-sub{font-size:.58rem;color:var(--muted)}
+
+.pv-item{display:flex;align-items:flex-start;gap:7px;margin-bottom:5px;padding:5px 7px;border-radius:4px}
+
+.pv-item.left{background:rgba(6,182,212,.07)}
+
+.pv-item.right{background:rgba(26,166,166,.07)}
+
+.pv-num{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.46rem;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px}
+
+.pv-num.left{background:var(--cyan)}
+
+.pv-num.right{background:var(--teal)}
+
+.pv-item-text{font-size:.62rem;color:var(--ink);line-height:1.45}
+
+.pv-section-title{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+
+.pv-section-bar{width:3px;height:13px;border-radius:1px;background:var(--cyan);flex-shrink:0}
+
+.pv-section-label{font-size:.72rem;font-weight:600;color:var(--navy)}
+
+.pv-item-single{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;padding:5px 9px;border-radius:4px;background:rgba(6,182,212,.07)}
+
+.pv-item-single .pv-num{background:var(--cyan)}
+
+.pv-notes{border-radius:6px;padding:10px 12px;background:#FFFBEB;border:.5px solid var(--gold);position:relative;overflow:hidden;margin-top:12px}
+
+.pv-notes::before{content:"";position:absolute;top:0;left:0;width:4px;bottom:0;background:var(--gold);border-radius:2px 0 0 2px}
+
+.pv-notes-label{font-size:.6rem;font-weight:700;color:var(--gold);margin-bottom:4px;padding-left:8px}
+
+.pv-notes-text{font-size:.62rem;color:var(--ink);line-height:1.5;padding-left:8px;white-space:pre-wrap}
+
+.pv-footer{margin-top:22px;padding-top:7px;border-top:1px solid var(--input-border);display:flex;justify-content:space-between;align-items:center}
+
+.pv-footer span{font-size:.52rem;color:#bbb}
+
+.pv-empty{text-align:center;padding:3rem 2rem;color:var(--text-muted)}
+
+.pv-empty i{font-size:2.5rem;margin-bottom:.65rem;display:block}
+
+.pv-empty p{font-size:.78rem}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(11,31,58,.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center;padding:1rem}
+
+.modal.open{display:flex}
+
+.mbox{background:var(--card-bg);border-radius:18px;padding:1.6rem;max-width:390px;width:90%;box-shadow:0 18px 56px rgba(11,31,58,.2);animation:pop .22s cubic-bezier(.34,1.56,.64,1);border:1px solid var(--input-border)}
+
+@media(max-width:600px){.mbox{padding:1.2rem;max-width:100%;border-radius:12px}}
+
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+
+.micon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;margin-bottom:.8rem}
+
+.micon.ok{background:#E8FAF2;color:#16A863}
+
+.micon.err{background:#FEF2F2;color:#DC2626}
+
+.mbox h3{font-size:1.05rem;color:var(--text-primary);margin:0 0 .35rem 0;font-weight:600}
+
+.mbox p{font-size:.82rem;color:var(--text-secondary);line-height:1.6;margin:0}
+
+.mbox ul{margin:.6rem 0 0 1rem;font-size:.82rem;color:var(--text-secondary);line-height:2}
+
+.mft{margin-top:.9rem}
+
+.mclose{float:right;background:none;border:none;cursor:pointer;font-size:.95rem;color:var(--text-secondary)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+
+::-webkit-scrollbar-track{background:transparent}
+
+::-webkit-scrollbar-thumb{background:var(--input-border);border-radius:3px}
+
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+
+/* Responsive */
+@media(max-width:768px){
+  .nav{flex-direction:column;gap:.75rem}
+  .split{padding:1rem}
+  .pv-page{max-height:400px}
+  .pv-footer{flex-direction:column;gap:.5rem}
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- PDF Preview Area -->
-        <div class="pdf-preview" id="pdfContent">
-            <!-- Header Section -->
-            <header class="pdf-header">
-                <div class="branding">
-                    <div class="logo-placeholder">
-                        <a href="https://brainchecker.in/"><img src="Brain Checker Logo.png" alt="" height="80"></a>
-                    </div>
-                    <div class="document-type">Personalized Action Plan</div>
-                </div>
-                
-                <div class="student-info">
-                    <div class="info-row">
-                        <div class="info-item">
-                            <span class="info-label">Student Name:</span>
-                            <span class="info-value" id="previewStudentName">{{studentName}}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Assessment Type:</span>
-                            <span class="info-value" id="previewAssessmentType">{{assessmentType}}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Date:</span>
-                            <span class="info-value" id="previewDate">{{currentDate}}</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
 
-            <!-- Disclaimer Section -->
-            <div class="disclaimer">
-                <p><i class="fas fa-info-circle"></i> This document contains personalized guidance based on the counseling session. It is not a clinical assessment or diagnostic report, but rather a daily reference tool for implementing recommended strategies.</p>
-            </div>
+<div class="nav">
+  <div>
+    <h1>Brain Checker</h1>
+    <p>Post-Counseling AI System</p>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">
+      <i class="fas fa-moon"></i>
+    </button>
+  </div>
+</div>
 
-            <!-- Two-Column Content -->
-            <main class="content-columns" id="contentColumns">
-                <!-- Parent Column -->
-                <section class="column parent-column" id="parentColumn">
-                    <div class="column-header">
-                        <div class="column-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h2>Parent Guidance</h2>
-                        <p class="column-subtitle">Daily support strategies</p>
-                    </div>
-                    
-                    <div class="tasks-container">
-                        <div class="tasks-list" id="previewParentTodos">
-                            <!-- Parent tasks will be dynamically inserted here -->
-                            {{#each parentTodos}}
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <i class="far fa-square"></i>
-                                </div>
-                                <div class="task-text">{{this}}</div>
-                            </div>
-                            {{/each}}
-                        </div>
-                        
-                        <div class="empty-state" id="parentEmptyState">
-                            <i class="fas fa-clipboard-list"></i>
-                            <p>No parent guidance added yet</p>
-                        </div>
-                    </div>
-                </section>
+<div class="split">
 
-                <!-- Student Column -->
-                <section class="column student-column" id="studentColumn">
-                    <div class="column-header">
-                        <div class="column-icon">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <h2>Student Actions</h2>
-                        <p class="column-subtitle">Daily practice & development</p>
-                    </div>
-                    
-                    <div class="tasks-container">
-                        <div class="tasks-list" id="previewStudentTodos">
-                            <!-- Student tasks will be dynamically inserted here -->
-                            {{#each studentTodos}}
-                            <div class="task-item">
-                                <div class="task-checkbox">
-                                    <i class="far fa-square"></i>
-                                </div>
-                                <div class="task-text">{{this}}</div>
-                            </div>
-                            {{/each}}
-                        </div>
-                        
-                        <div class="empty-state" id="studentEmptyState">
-                            <i class="fas fa-clipboard-list"></i>
-                            <p>No student actions added yet</p>
-                        </div>
-                    </div>
-                </section>
-            </main>
-
-            <!-- Notes Section -->
-            <section class="notes-section">
-                <div class="notes-header">
-                    <i class="fas fa-sticky-note"></i>
-                    <h3>Counselor Notes & Recommendations</h3>
-                </div>
-                <div class="notes-content" id="previewCounselorNotes">
-                    {{counselorNotes}}
-                </div>
-            </section>
-
-            <!-- Footer -->
-            <footer class="pdf-footer">
-                <div class="footer-content">
-                    <p>This personalized action plan was created by your Brain Checker counselor. For questions or follow-up, please contact your counseling session provider.</p>
-                    <div class="footer-meta">
-                        <span>Generated on: {{currentDate}}</span>
-                        <span>Confidential - For family use only</span>
-                    </div>
-                </div>
-            </footer>
-        </div>
-
-        <!-- Input Form (for live preview) -->
-        <div class="input-form">
-            <h2><i class="fas fa-edit"></i> Guidance Input</h2>
-            
-            <div class="form-group">
-                <label for="studentName"><i class="fas fa-user"></i> Student Name</label>
-                <input type="text" id="studentName" placeholder="Enter student's full name">
-            </div>
-            
-            <div class="form-group">
-                <label for="assessmentType"><i class="fas fa-chart-bar"></i> Assessment Type</label>
-                <select id="assessmentType"><option value="" disabled selected>Select assessment type</option>
-                    <option value="Psychometric Test (Below 13)">Psychometric Test (Below 13)</option>
-                    <option value="Career Guidance (13+)">Career Guidance (13+)</option>
-                </select>
-            </div>
-            
-            <!-- Psychometric Test Layout (Parent and Student) -->
-            <div class="form-row" id="dualTodosRow">
-                <div class="form-column">
-                    <label for="parentTodos"><i class="fas fa-users"></i> Parent To-Do List</label>
-                    <p class="help-text">Enter one task per line</p>
-                    <textarea id="parentTodos" rows="8" placeholder="Example: Review homework for 15 minutes daily
-Establish consistent bedtime routine
-Praise effort, not just results"></textarea>
-                </div>
-                
-                <div class="form-column">
-                    <label for="studentTodos"><i class="fas fa-user-graduate"></i> Student To-Do List</label>
-                    <p class="help-text">Enter one task per line</p>
-                    <textarea id="studentTodos" rows="8" placeholder="Example: Practice deep breathing for 5 minutes
-Organize school bag each evening
-Read for pleasure 20 minutes daily"></textarea>
-                </div>
-            </div>
-            
-            <!-- Career Guidance Layout (Single To-Do) -->
-            <div class="form-group" id="singleTodoGroup" style="display: none;">
-                <label for="careerTodo"><i class="fas fa-tasks"></i> To-Do List</label>
-                <p class="help-text">Enter one task per line</p>
-                <textarea id="careerTodo" rows="8" placeholder="Example: Explore career interests
-Research potential career paths
-Prepare for career discussions"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="counselorNotes"><i class="fas fa-sticky-note"></i> Additional Counselor Notes (Optional)</label>
-                <textarea id="counselorNotes" rows="4" placeholder="Add any additional recommendations or context..."></textarea>
-            </div>
-            
-            <div class="form-actions">
-                <button id="downloadPdf" class="btn-primary">
-                    <i class="fas fa-download"></i> Download as PDF
-                </button>
-                <button id="resetForm" class="btn-secondary">
-                    <i class="fas fa-redo"></i> Reset Form
-                </button>
-            </div>
-            
-            <!-- <div class="instructions">
-                <h3><i class="fas fa-lightbulb"></i> Tips for Effective Guidance</h3>
-                <ul>
-                    <li>Keep tasks specific and actionable</li>
-                    <li>Focus on daily or weekly habits</li>
-                    <li>Balance challenge with achievability</li>
-                    <li>Update this plan as progress is made</li>
-                </ul>
-            </div> -->
-        </div>
+  <div class="form-panel">
+    <div class="card">
+      <div class="card-head"><i class="fas fa-user"></i> Student Information</div>
+      <div class="fg">
+        <label>Student Name</label>
+        <input type="text" id="studentName" placeholder="Enter student's full name">
+      </div>
+      <div class="fg">
+        <label>Assessment Type</label>
+        <select id="assessmentType">
+          <option value="">-- Select Assessment --</option>
+          <option value="Psychometric">Psychometric</option>
+          <option value="Career Counseling">Career Counseling</option>
+          <option value="Academic Support">Academic Support</option>
+        </select>
+      </div>
     </div>
 
-    <!-- Modal for success message -->
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-check-circle"></i> PDF Ready for Download</h3>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p>Your personalized action plan has been generated and should start downloading automatically.</p>
-                <p>If the download doesn't start, please check your browser's download settings or try again.</p>
-            </div>
-        </div>
+    <div class="card" id="parentCard" style="display:none">
+      <div class="card-head"><i class="fas fa-heart"></i> Parent To-Do List</div>
+      <div class="fg">
+        <label>Parent Actions <span class="pill">Multi-line</span></label>
+        <textarea id="parentTodos" placeholder="Enter one action per line&#10;e.g. Schedule follow-up meeting&#10;Set daily routine&#10;Track progress"></textarea>
+        <p class="help">Separate each action with a new line</p>
+      </div>
     </div>
 
-    <!-- Modal for validation message -->
-    <div id="validationModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-exclamation-circle"></i> Missing Required Fields</h3>
-                <span class="close-modal-validation">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p>Please fill in all required fields before generating the PDF:</p>
-                <ul id="missingFieldsList" style="text-align: left; margin-top: 15px;">
-                </ul>
-            </div>
-        </div>
+    <div class="card">
+      <div class="card-head"><i class="fas fa-target"></i> <span id="studentLabel">Student To-Do List</span></div>
+      <div class="fg">
+        <label><span id="todoLabel">Student Actions</span> <span class="pill">Multi-line</span></label>
+        <textarea id="studentTodos" placeholder="Enter one action per line&#10;e.g. Practice breathing exercises&#10;Read chapter 1&#10;Join study group"></textarea>
+        <p class="help">Separate each action with a new line</p>
+      </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-        // Initialize with current date
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentDate = new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            document.getElementById('previewDate').textContent = currentDate;
-            
-            // Also update the footer date
-            const footerDateSpan = document.querySelector('.footer-meta span:first-child');
-            if (footerDateSpan) {
-                footerDateSpan.textContent = `Generated on: ${currentDate}`;
-            }
-            
-            // Set up live preview updates
-            setupLivePreview();
-            
-            // Set up PDF generation
-            setupPdfGeneration();
-            
-            // Set up modal
-            setupModal();
-            
-            // Validate form on initial load
-            validateForm();
-        });
-        
-        function setupLivePreview() {
-            const inputs = ['studentName', 'assessmentType', 'parentTodos', 'studentTodos', 'counselorNotes', 'careerTodo'];
-            
-            inputs.forEach(inputId => {
-                const inputElement = document.getElementById(inputId);
-                const previewElement = document.getElementById('preview' + capitalizeFirstLetter(inputId));
-                
-                if (inputElement) {
-                    inputElement.addEventListener('input', function() {
-                        if (inputId === 'parentTodos' || inputId === 'studentTodos') {
-                            updateTasksPreview(inputId, this.value);
-                        } else if (inputId === 'careerTodo') {
-                            updateTasksPreview('studentTodos', this.value); // Use studentTodos preview for career to-do
-                        } else if (previewElement) {
-                            previewElement.textContent = this.value;
-                        }
-                        validateForm();
-                    });
-                    
-                    if (inputId === 'assessmentType') {
-                        inputElement.addEventListener('change', function() {
-                            previewElement.textContent = this.value;
-                            toggleAssessmentLayout(this.value);
-                            validateForm();
-                        });
-                    }
-                }
-            });
-        }
-        
-        function toggleAssessmentLayout(assessmentType) {
-            const dualTodosRow = document.getElementById('dualTodosRow');
-            const singleTodoGroup = document.getElementById('singleTodoGroup');
-            const parentEmptyState = document.getElementById('parentEmptyState');
-            const studentEmptyState = document.getElementById('studentEmptyState');
-            const contentColumns = document.getElementById('contentColumns');
-            const parentColumn = document.getElementById('parentColumn');
-            const studentColumn = document.getElementById('studentColumn');
-            const studentColumnHeader = studentColumn.querySelector('.column-header');
-            
-            if (assessmentType === 'Career Guidance (13+)') {
-                // Show single to-do, hide dual todos
-                dualTodosRow.style.display = 'none';
-                singleTodoGroup.style.display = 'block';
-                
-                // Update preview layout - single column
-                contentColumns.style.gridTemplateColumns = '1fr';
-                parentColumn.style.display = 'none';
-                studentColumn.style.display = 'block';
-                studentColumn.classList.remove('student-column');
-                studentColumn.classList.add('career-column');
-                
-                // Update student column header for career guidance
-                studentColumnHeader.innerHTML = `
-                    <div class="column-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <h2>To-Do List</h2>
-                    <p class="column-subtitle">Daily actions & goals</p>
-                `;
-                
-                // Clear parent todos and show empty state
-                document.getElementById('parentTodos').value = '';
-                document.getElementById('studentTodos').value = '';
-                document.getElementById('previewParentTodos').innerHTML = '';
-                document.getElementById('careerTodo').value = '';
-                
-                parentEmptyState.style.display = 'flex';
-                studentEmptyState.style.display = 'flex';
-            } else if (assessmentType === 'Psychometric Test (Below 13)') {
-                // Show dual todos, hide single to-do
-                dualTodosRow.style.display = 'grid';
-                singleTodoGroup.style.display = 'none';
-                
-                // Update preview layout - two columns
-                contentColumns.style.gridTemplateColumns = '1fr 1fr';
-                parentColumn.style.display = 'block';
-                studentColumn.style.display = 'block';
-                studentColumn.classList.remove('career-column');
-                studentColumn.classList.add('student-column');
-                
-                // Restore student column header for psychometric test
-                studentColumnHeader.innerHTML = `
-                    <div class="column-icon">
-                        <i class="fas fa-user-graduate"></i>
-                    </div>
-                    <h2>Student Actions</h2>
-                    <p class="column-subtitle">Daily practice & development</p>
-                `;
-                
-                // Clear career todo
-                document.getElementById('careerTodo').value = '';
-                document.getElementById('previewStudentTodos').innerHTML = '';
-                document.getElementById('previewParentTodos').innerHTML = '';
-                
-                parentEmptyState.style.display = 'flex';
-                studentEmptyState.style.display = 'flex';
-            } else {
-                // No assessment selected
-                dualTodosRow.style.display = 'none';
-                singleTodoGroup.style.display = 'none';
-                parentColumn.style.display = 'block';
-                studentColumn.style.display = 'block';
-                contentColumns.style.gridTemplateColumns = '1fr 1fr';
-            }
-        }
-        
-        function validateForm() {
-            const studentName = document.getElementById('studentName').value.trim();
-            const assessmentType = document.getElementById('assessmentType').value.trim();
-            const downloadBtn = document.getElementById('downloadPdf');
-            
-            let isValid = studentName !== '' && assessmentType !== '';
-            
-            if (assessmentType === 'Psychometric Test (Below 13)') {
-                const parentTodos = document.getElementById('parentTodos').value.trim();
-                const studentTodos = document.getElementById('studentTodos').value.trim();
-                isValid = isValid && parentTodos !== '' && studentTodos !== '';
-            } else if (assessmentType === 'Career Guidance (13+)') {
-                const careerTodo = document.getElementById('careerTodo').value.trim();
-                isValid = isValid && careerTodo !== '';
-            }
-            
-            if (isValid) {
-                downloadBtn.disabled = false;
-                downloadBtn.style.opacity = '1';
-                downloadBtn.style.cursor = 'pointer';
-            } else {
-                downloadBtn.disabled = false; // Keep button clickable to show validation
-                downloadBtn.style.opacity = '0.6';
-                downloadBtn.style.cursor = 'not-allowed';
-            }
-        }
-        
-        function updateTasksPreview(type, text) {
-            const previewId = type === 'parentTodos' ? 'previewParentTodos' : 'previewStudentTodos';
-            const emptyStateId = type === 'parentTodos' ? 'parentEmptyState' : 'studentEmptyState';
-            
-            const previewElement = document.getElementById(previewId);
-            const emptyStateElement = document.getElementById(emptyStateId);
-            
-            if (!text.trim()) {
-                previewElement.innerHTML = '';
-                emptyStateElement.style.display = 'flex';
-                return;
-            }
-            
-            emptyStateElement.style.display = 'none';
-            
-            const tasks = text.split('\n').filter(task => task.trim() !== '');
-            let tasksHtml = '';
-            
-            tasks.forEach(task => {
-                tasksHtml += `
-                    <div class="task-item">
-                        <div class="task-checkbox">
-                            <i class="far fa-square"></i>
-                        </div>
-                        <div class="task-text">${task.trim()}</div>
-                    </div>
-                `;
-            });
-            
-            previewElement.innerHTML = tasksHtml;
-        }
-        
-        function setupPdfGeneration() {
-            document.getElementById('downloadPdf').addEventListener('click', function(e) {
-                const studentName = document.getElementById('studentName').value.trim();
-                const assessmentType = document.getElementById('assessmentType').value.trim();
-                
-                let isValid = studentName !== '' && assessmentType !== '';
-                
-                if (assessmentType === 'Psychometric Test (Below 13)') {
-                    const parentTodos = document.getElementById('parentTodos').value.trim();
-                    const studentTodos = document.getElementById('studentTodos').value.trim();
-                    isValid = isValid && parentTodos !== '' && studentTodos !== '';
-                } else if (assessmentType === 'Career Guidance (13+)') {
-                    const careerTodo = document.getElementById('careerTodo').value.trim();
-                    isValid = isValid && careerTodo !== '';
-                }
-                
-                if (!isValid) {
-                    e.preventDefault();
-                    showValidationModal();
-                    return;
-                }
-                generatePdf();
-            });
-        }
-        
-        function generatePdf() {
-            const pdfContent = document.getElementById('pdfContent');
-            
-            html2canvas(pdfContent, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-                
-                const imgWidth = 210; // A4 width in mm
-                const pageHeight = 297; // A4 height in mm
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                
-                let heightLeft = imgHeight;
-                let position = 0;
-                
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-                
-                // Add additional pages if content is too long
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-                
-                // Generate filename
-                const studentName = document.getElementById('studentName').value || 'Student';
-                const filename = `BrainChecker_ActionPlan_${studentName.replace(/\s+/g, '_')}.pdf`;
-                
-                pdf.save(filename);
-                
-                // Show success modal
-                document.getElementById('successModal').style.display = 'block';
-            });
-        }
-        
-        function setupModal() {
-            const modal = document.getElementById('successModal');
-            const closeBtn = document.querySelector('.close-modal');
-            
-            const validationModal = document.getElementById('validationModal');
-            const closeValidationBtn = document.querySelector('.close-modal-validation');
-            
-            closeBtn.addEventListener('click', function() {
-                modal.style.display = 'none';
-            });
-            
-            closeValidationBtn.addEventListener('click', function() {
-                validationModal.style.display = 'none';
-            });
-            
-            window.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-                if (event.target === validationModal) {
-                    validationModal.style.display = 'none';
-                }
-            });
-            
-            // Reset form button
-            document.getElementById('resetForm').addEventListener('click', function() {
-                if (confirm('Are you sure you want to reset all fields?')) {
-                    document.getElementById('studentName').value = '';
-                    document.getElementById('assessmentType').value = '';
-                    document.getElementById('parentTodos').value = '';
-                    document.getElementById('studentTodos').value = '';
-                    document.getElementById('careerTodo').value = '';
-                    document.getElementById('counselorNotes').value = '';
-                    
-                    // Update preview
-                    document.getElementById('previewStudentName').textContent = '{{studentName}}';
-                    document.getElementById('previewAssessmentType').textContent = '{{assessmentType}}';
-                    document.getElementById('previewParentTodos').innerHTML = '';
-                    document.getElementById('previewStudentTodos').innerHTML = '';
-                    document.getElementById('previewCounselorNotes').textContent = '';
-                    
-                    document.getElementById('parentEmptyState').style.display = 'flex';
-                    document.getElementById('studentEmptyState').style.display = 'flex';
-                    
-                    // Hide layout rows
-                    document.getElementById('dualTodosRow').style.display = 'none';
-                    document.getElementById('singleTodoGroup').style.display = 'none';
-                    
-                    validateForm();
-                }
-            });
-        }
-        
-        function showValidationModal() {
-            const validationModal = document.getElementById('validationModal');
-            const missingFieldsList = document.getElementById('missingFieldsList');
-            const missingFields = [];
-            
-            const studentName = document.getElementById('studentName').value.trim();
-            const assessmentType = document.getElementById('assessmentType').value.trim();
-            const parentTodos = document.getElementById('parentTodos').value.trim();
-            const studentTodos = document.getElementById('studentTodos').value.trim();
-            const careerTodo = document.getElementById('careerTodo').value.trim();
-            
-            if (studentName === '') missingFields.push('Student Name');
-            if (assessmentType === '') missingFields.push('Assessment Type');
-            
-            if (assessmentType === 'Psychometric Test (Below 13)') {
-                if (parentTodos === '') missingFields.push('Parent To-Do List');
-                if (studentTodos === '') missingFields.push('Student To-Do List');
-            } else if (assessmentType === 'Career Guidance (13+)') {
-                if (careerTodo === '') missingFields.push('To-Do List');
-            }
-            
-            missingFieldsList.innerHTML = missingFields.map(field => `<li><i class="fas fa-exclamation-triangle"></i> ${field}</li>`).join('');
-            
-            console.log('Showing validation modal');
-            validationModal.style.display = 'flex';
-        }
-        
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-    </script>
+    <div class="card" id="careerCard" style="display:none">
+      <div class="card-head"><i class="fas fa-briefcase"></i> Career Action Plan</div>
+      <div class="fg">
+        <label>Career Actions <span class="pill">Multi-line</span></label>
+        <textarea id="careerTodo" placeholder="Enter one action per line&#10;e.g. Research career options&#10;Update resume&#10;Schedule informational interviews"></textarea>
+        <p class="help">Separate each action with a new line</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><i class="fas fa-sticky-note"></i> Counselor Notes</div>
+      <div class="fg">
+        <label>Notes & Recommendations</label>
+        <textarea id="counselorNotes" placeholder="Add any personalized guidance, observations, or recommendations..."></textarea>
+        <p class="help">These will appear in the PDF for family reference</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:0 0 .5rem">
+      <button class="btn btn-primary" id="btnDownload"><i class="fas fa-file-pdf"></i> Generate PDF</button>
+      <button class="btn btn-outline" id="btnReset"><i class="fas fa-redo"></i> Reset</button>
+    </div>
+  </div>
+
+  <div class="preview-panel">
+    <div class="pv-label">PDF Preview</div>
+    <div id="pdfPreview" class="pv-page">
+      <div class="pv-header">
+        <div class="pv-logo-wrap"><span style="color:#fff;font-weight:700">BC</span></div>
+        <div class="pv-header-text">
+          <div class="pv-header-title">Brain Checker</div>
+          <div class="pv-header-sub">Post-Counseling AI System</div>
+        </div>
+        <div class="pv-date-chip" id="dateChip"></div>
+      </div>
+      <div class="pv-gold"></div>
+      <div class="pv-body">
+        <div class="pv-strip">
+          <div class="pv-strip-bar"></div>
+          <div>
+            <div class="pv-strip-name" id="previewName">Student Name</div>
+            <div class="pv-strip-type" id="previewType">Assessment Type</div>
+          </div>
+          <div class="pv-confidential">CONFIDENTIAL</div>
+        </div>
+
+        <div class="pv-divider"></div>
+
+        <div class="pv-disclaimer">This guidance is intended for support and direction only and does not replace professional, medical, or psychological advice.</div>
+
+        <div id="previewContent"></div>
+
+        <div id="previewNotes" class="pv-notes" style="display:none">
+          <div class="pv-notes-label">Counselor Notes</div>
+          <div class="pv-notes-text" id="previewNotesText"></div>
+        </div>
+      </div>
+      <div class="pv-footer">
+        <span>Brain Checker • Confidential</span>
+        <span>For family use only</span>
+      </div>
+    </div>
+    <div class="pv-empty" id="pdfEmpty" style="display:none"><i class="fas fa-inbox"></i><p>Fill in the form to preview PDF</p></div>
+  </div>
+
+</div>
+
+<div id="modalOk" class="modal">
+  <div class="mbox" style="text-align:center">
+    <div class="micon ok"><i class="fas fa-check"></i></div>
+    <h3>PDF Generated!</h3>
+    <p id="okMsg">Your personalized action plan has been downloaded.</p>
+    <div class="mft"><button class="btn btn-primary" onclick="closeModal('modalOk')">Done</button></div>
+  </div>
+</div>
+
+<div id="modalErr" class="modal">
+  <div class="mbox">
+    <button class="mclose" onclick="closeModal('modalErr')">&times;</button>
+    <div class="micon err"><i class="fas fa-alert-circle"></i></div>
+    <h3>Missing Information</h3>
+    <p>Please fill in these fields:</p>
+    <ul id="missingList"></ul>
+    <div class="mft"><button class="btn btn-primary" onclick="closeModal('modalErr')" style="width:100%">Got It</button></div>
+  </div>
+</div>
+
+<script>
+// ===== THEME TOGGLE =====
+function initTheme() {
+  const stored = localStorage.getItem('bc-theme') || 'light-mode';
+  document.documentElement.className = stored;
+  updateThemeIcon();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isLight = html.className === 'light-mode';
+  const newTheme = isLight ? 'dark-mode' : 'light-mode';
+  html.className = newTheme;
+  localStorage.setItem('bc-theme', newTheme);
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const toggle = document.getElementById('themeToggle');
+  const isDark = document.documentElement.className === 'dark-mode';
+  toggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}
+
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+// ===== HELPER FUNCTIONS =====
+const $ = id => document.getElementById(id);
+const val = id => $(id)?.value || '';
+const lines = id => val(id).split('\n').map(x => x.trim()).filter(Boolean);
+
+function toggleLayout(type){
+  $('parentCard').style.display = type.includes('Psychometric') ? 'block' : 'none';
+  $('careerCard').style.display = type.includes('Career') ? 'block' : 'none';
+  const lbl = type.includes('Career') ? 'Career Actions' : 'Student Actions';
+  $('studentLabel').textContent = lbl;
+  $('todoLabel').textContent = lbl;
+}
+
+function syncBtn(){
+  const name = val('studentName').trim();
+  $('btnDownload').disabled = !name;
+}
+
+function updatePreview(){
+  const name = val('studentName') || 'Student Name';
+  const type = val('assessmentType') || 'Assessment Type';
+  const notes = val('counselorNotes').trim();
+
+  $('previewName').textContent = name;
+  $('previewType').textContent = type;
+  $('dateChip').textContent = new Date().toLocaleDateString();
+
+  const isPsy = type.includes('Psychometric');
+  const pItems = isPsy ? lines('parentTodos') : [];
+  const sItems = type.includes('Career') ? lines('careerTodo') : lines('studentTodos');
+
+  let html = '';
+  if (isPsy && pItems.length) {
+    html += '<div class="pv-section-title"><div class="pv-section-bar"></div><div class="pv-section-label">Parent Guidance</div></div>';
+    pItems.forEach((t,i) => {
+      html += `<div class="pv-item left"><div class="pv-num left">${i+1}</div><div class="pv-item-text">${t}</div></div>`;
+    });
+    html += '<div style="height:1px;background:#DDE3F0;margin:10px 0"></div>';
+  }
+
+  if (sItems.length) {
+    html += '<div class="pv-section-title"><div class="pv-section-bar"></div><div class="pv-section-label">Student Actions</div></div>';
+    sItems.forEach((t,i) => {
+      html += `<div class="pv-item"><div class="pv-num">${i+1}</div><div class="pv-item-text">${t}</div></div>`;
+    });
+  }
+
+  $('previewContent').innerHTML = html;
+
+  if (notes) {
+    $('previewNotes').style.display = 'block';
+    $('previewNotesText').textContent = notes;
+  } else {
+    $('previewNotes').style.display = 'none';
+  }
+}
+
+function closeModal(id){
+  $(id).classList.remove('open');
+}
+
+function validate(){
+  const checks = [
+    ['studentName', 'Student Name'],
+    ['assessmentType', 'Assessment Type']
+  ];
+  const type = val('assessmentType');
+  if (type.includes('Psychometric') && !lines('parentTodos').length) checks.push(['parentTodos', 'Parent Actions']);
+  if (type.includes('Career')) {
+    if (!lines('careerTodo').length) checks.push(['careerTodo', 'Career Actions']);
+  } else {
+    if (!lines('studentTodos').length) checks.push(['studentTodos', 'Student Actions']);
+  }
+
+  const missing = [];
+  checks.forEach(([id, label]) => {
+    if (!val(id).trim()) missing.push(label);
+  });
+  return { ok: !missing.length, missing };
+}
+
+// ===== PDF GENERATOR (FROM ORIGINAL) =====
+function generatePdf(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','pt',[612,792]);
+  const W = 612;
+  const H = 792;
+  const ML = 48;
+  const MR = 48;
+  const BM = 28;
+
+  const C = {
+    navy:[11,31,58],
+    indigo:[26,58,107],
+    sky:[45,125,210],
+    teal:[26,166,166],
+    gold:[240,165,0],
+    white:[255,255,255],
+    ink:[26,26,46],
+    muted:[107,122,153],
+    lightBg:[245,246,250],
+    lAcc:[45,125,210],
+    rAcc:[26,166,166],
+    lBg:[235,240,250],
+    rBg:[235,245,245],
+    nBg:[255,251,235],
+    nAcc:[240,165,0]
+  };
+
+  const px = n => Math.round(n * 96 / 72);
+  const fill = (r,g,b) => doc.setFillColor(r,g,b);
+  const ink = (r,g,b) => doc.setTextColor(r,g,b);
+  const pen = (r,g,b) => doc.setDrawColor(r,g,b);
+  const rr = (x,y,w,h,r,rgb,stroke,sw) => {
+    if(rgb) fill(rgb[0],rgb[1],rgb[2]);
+    doc.roundedRect(x,y,w,h,px(r),px(r),'FD');
+    if(stroke){pen(stroke[0],stroke[1],stroke[2]);doc.setLineWidth(sw||0.5);doc.roundedRect(x,y,w,h,px(r),px(r),'S');}
+  };
+
+  let y = 0;
+  let pageCount = 0;
+  let leftY = 0;
+  let rightY = 0;
+  let colTopY = 0;
+  const lx = ML;
+  const rx = ML + Math.round((W-ML-MR)/2) + px(8);
+  const cw = Math.round((W-ML-MR)/2) - px(8);
+  const cx = lx + cw + px(8)/2;
+
+  function pageBg(){
+    fill(255,255,255);doc.rect(0,0,W,H,'F');
+    fill(...C.lightBg);doc.rect(0,0,W,px(130),'F');
+  }
+
+  function drawHeader(){
+    fill(...C.navy);doc.roundedRect(ML,y,W-ML-MR,px(130),px(8),px(8),'F');
+    fill(...C.teal);var tw = px(100);var th = px(130);doc.polygon([[W-MR-tw,y],[W-MR,y],[W-MR,y+th]]);
+    ink(...C.white);doc.setFont('helvetica','bold');doc.setFontSize(18);
+    doc.text('Brain Checker',ML+px(20),y+px(50));
+    doc.setFont('helvetica','normal');doc.setFontSize(9);ink(...C.white);
+    doc.text('Post-Counseling AI System',ML+px(20),y+px(70));
+    doc.setFont('helvetica','bold');doc.setFontSize(10);ink(...C.indigo);
+    doc.text(new Date().toLocaleDateString(),W-MR-px(20),y+px(50),{align:'right'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8);ink(...C.muted);
+    doc.text('Confidential',W-MR-px(20),y+px(70),{align:'right'});
+    y += px(150);
+  }
+
+  function drawStrip(){
+    ink(...C.navy);doc.setFont('helvetica','bold');doc.setFontSize(12);
+    var name = val('studentName');
+    var type = val('assessmentType');
+    fill(...C.indigo);rr(ML,y,W-ML-MR,px(50),px(6),C.indigo);
+    ink(...C.white);doc.text('Student:  '+name,ML+px(14),y+px(32));
+    doc.setFont('helvetica','normal');doc.setFontSize(9);
+    doc.text(type,ML+px(14),y+px(50));
+    y += px(65);
+  }
+
+  function drawDisclaimer(){
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);ink(...C.muted);
+    fill(...C.lBg);rr(ML,y,W-ML-MR,px(40),px(4),C.lBg);
+    doc.text('This guidance is intended for support and direction only and does not replace professional advice.',ML+px(14),y+px(13));
+    doc.text('Counselor reports are confidential and for family use only.',ML+px(14),y+px(26));
+    y += px(50);
+  }
+
+  function checkBreak(h){
+    if(y+h>H-BM){doc.addPage();pageBg();pageCount++;colTopY=ML+px(10);leftY=colTopY;rightY=colTopY;y=colTopY;}
+  }
+
+  function drawItemSingle(num,text){
+    doc.setFont('helvetica','normal');doc.setFontSize(9);
+    var tw=W-ML-MR-px(56);
+    var wrapped=doc.splitTextToSize(text,tw);
+    var lh=px(9*1.6);
+    var ih=wrapped.length*lh+px(28);
+    checkBreak(ih+px(6));
+    rr(ML,y,W-ML-MR,ih,px(3),C.lBg);
+    var circX=ML+px(24),circY=y+ih/2;
+    fill(...C.sky);doc.circle(circX,circY,px(7.6),'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(7);ink(255,255,255);
+    doc.text(String(num),circX,circY+px(2),{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(9);ink(...C.ink);
+    wrapped.forEach(function(l,i){doc.text(l,ML+px(50),y+px(18)+i*lh);});
+    y+=ih+px(12);
+  }
+
+  function drawSectionTitle(title){
+    ink(...C.navy);doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text(title,ML+px(10),y+px(18));
+    y+=px(30);
+  }
+
+  function drawTwoCol(leftItems,rightItems){
+    doc.setFont('helvetica','bold');doc.setFontSize(10);
+    colTopY=y+px(5);
+    leftY=colTopY;
+    rightY=colTopY;
+    function colHeader(side,title,sub){
+      var x=side==='L'?lx:rx;
+      var acc=side==='L'?C.lAcc:C.rAcc;
+      var bg=side==='L'?C.lBg:C.rBg;
+      var hh=px(70);
+      ink(...acc[0],...acc[1],...acc[2]);doc.setFont('helvetica','bold');doc.setFontSize(10);
+      var sy=side==='L'?leftY:rightY;
+      fill(...bg);doc.roundedRect(x,sy,cw,hh,px(3),px(3),'F');
+      fill(acc[0],acc[1],acc[2]);doc.roundedRect(x,sy,cw,px(3),px(1),px(1),'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(9);ink(11,31,58);
+      doc.text(title,x+px(14),sy+px(20));
+      doc.setFont('helvetica','normal');doc.setFontSize(7.5);ink(107,122,153);
+      doc.text(sub,x+px(14),sy+px(33));
+      if(side==='L')leftY+=hh+px(8);else rightY+=hh+px(8);
+    }
+    function colDivider(){
+      var bot=Math.max(leftY,rightY);
+      pen(221,227,240);doc.setLineWidth(0.5);
+      doc.setLineDashPattern([px(4),px(4)],0);
+      doc.line(cx,colTopY,cx,bot);
+      doc.setLineDashPattern([],0);
+    }
+    function colItem(side,num,text){
+      var x=side==='L'?lx:rx;
+      var acc=side==='L'?C.lAcc:C.rAcc;
+      var bg=side==='L'?C.lBg:C.rBg;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);
+      var tw=cw-px(28);
+      var wrapped=doc.splitTextToSize(text,tw);
+      var lh=px(9*1.6);
+      var ih=wrapped.length*lh+px(18);
+      var curY=side==='L'?leftY:rightY;
+      if(curY+ih>H-BM){
+        colDivider();
+        doc.addPage();pageBg();pageCount++;
+        colTopY=ML+px(10);
+        if(side==='L'){leftY=colTopY;}else{rightY=colTopY;}
+      }
+      var ty=side==='L'?leftY:rightY;
+      rr(x,ty,cw-px(2),ih,px(3),bg);
+      var circX=x+px(18),circY=ty+ih/2;
+      fill(acc[0],acc[1],acc[2]);doc.circle(circX,circY,px(7.6),'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(7);ink(255,255,255);
+      doc.text(String(num),circX,circY+px(2),{align:'center'});
+      doc.setFont('helvetica','normal');doc.setFontSize(9);ink(26,26,46);
+      wrapped.forEach(function(l,i){doc.text(l,x+px(30),ty+px(18)+i*lh);});
+      var newY=ty+ih+px(6);
+      if(side==='L')leftY=newY;else rightY=newY;
+    }
+    colHeader('L','Parent Guidance','Daily Support Strategies');
+    colHeader('R','Student Actions','Daily Practice & Growth');
+    leftItems.forEach(function(t,i){colItem('L',i+1,t);});
+    rightItems.forEach(function(t,i){colItem('R',i+1,t);});
+    colDivider();
+    y=Math.max(leftY,rightY)+px(16);
+  }
+
+  function drawNotes(text){
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+    var tw=W-ML-MR-px(28);
+    var wrapped=doc.splitTextToSize(text,tw);
+    var lh=px(9.5*1.5);
+    var bh=wrapped.length*lh+px(32);
+    checkBreak(bh+px(8));
+    rr(ML,y,W-ML-MR,bh,px(6),C.nBg,C.nAcc,0.5);
+    fill(240,165,0);doc.roundedRect(ML,y,px(3.5),bh,px(2),px(2),'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(8);ink(240,165,0);
+    doc.text('Counselor Notes & Recommendations',ML+px(16),y+px(18));
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);ink(26,26,46);
+    wrapped.forEach(function(l,i){doc.text(l,ML+px(16),y+px(30)+i*lh);});
+    y+=bh+px(12);
+  }
+
+  function drawFooters(total){
+    for(var p=1;p<=total;p++){
+      doc.setPage(p);
+      fill(11,31,58);doc.rect(0,H-px(3),W,px(3),'F');
+      doc.setFont('helvetica','normal');doc.setFontSize(7.5);ink(107,122,153);
+      doc.text('Brain Checker • Counselor Report',ML,H-px(14));
+      doc.text('Confidential — For family use only',W/2,H-px(14),{align:'center'});
+      doc.text('Page '+p+' / '+total,W-MR,H-px(14),{align:'right'});
+    }
+  }
+
+  pageBg();
+  drawHeader();
+  drawStrip();
+  drawDisclaimer();
+  const type = val('assessmentType');
+  const isPsy = type.includes('Psychometric');
+  const pItems = isPsy ? lines('parentTodos') : [];
+  const sItems = type.includes('Career') ? lines('careerTodo') : lines('studentTodos');
+  const notes = val('counselorNotes').trim();
+
+  if(isPsy){drawTwoCol(pItems,sItems);}
+  else{drawSectionTitle('To-Do List — Daily Actions & Goals');sItems.forEach(function(t,i){drawItemSingle(i+1,t);});y+=px(6);}
+  if(notes)drawNotes(notes);
+  drawFooters(doc.getNumberOfPages());
+  doc.save('BrainChecker_'+val('studentName').replace(/\s+/g,'_')+'_'+Date.now()+'.pdf');
+  $('modalOk').classList.add('open');
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',function(){
+  initTheme();
+  ['studentName','assessmentType','parentTodos','studentTodos','counselorNotes','careerTodo'].forEach(function(id){
+    var el=$(id);if(!el)return;
+    el.addEventListener('input',function(){syncBtn();updatePreview();});
+    if(id==='assessmentType')el.addEventListener('change',function(e){toggleLayout(e.target.value);syncBtn();updatePreview();});
+  });
+  $('btnDownload').addEventListener('click',function(){
+    var v=validate();
+    if(!v.ok){$('missingList').innerHTML=v.missing.map(function(f){return '<li>'+f+'</li>';}).join('');$('modalErr').classList.add('open');return;}
+    var btn=$('btnDownload');btn.classList.add('loading');btn.disabled=true;
+    setTimeout(function(){try{generatePdf();}catch(e){alert('Error: '+e.message);console.error(e);}btn.classList.remove('loading');btn.disabled=false;},30);
+  });
+  $('btnReset').addEventListener('click',function(){
+    if(!confirm('Reset all fields?'))return;
+    ['studentName','assessmentType','parentTodos','studentTodos','careerTodo','counselorNotes'].forEach(function(id){var e=$(id);if(e)e.value='';});
+    toggleLayout('');syncBtn();updatePreview();
+  });
+  ['modalOk','modalErr'].forEach(function(id){$(id).addEventListener('click',function(e){if(e.target===$(id))closeModal(id);});});
+  updatePreview();syncBtn();
+});
+</script>
 </body>
-
 </html>
